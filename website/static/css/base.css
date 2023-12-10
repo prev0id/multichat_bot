@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+:root {
+    --text-light: #1c0e03;
+    --background-light: #ffffff;
+    --primary-light: #1361a4;
+    --secondary-light: #d8bff8;
+    --accent-light: #197bd2;
+
+    --text-dark: #fceee3;
+    --background-dark: #000000;
+    --primary-dark: #5ba8ec;
+    --secondary-dark: #200740;
+    --accent-dark: #2d90e6;
+
+    --light-shadow: rgba(0, 0, 0, 0.03);
+    --border-radius: 1rem;
+}
+
+:root {
+    --section-gap: 160px;
+
+    /*--text: var(--text-light);*/
+    /*--background: var(--background-light);*/
+    /*--primary: var(--primary-light);*/
+    /*--secondary: var(--secondary-light);*/
+    /*--accent: var(--accent-light);*/
+
+    --text: #000000;
+    --background: #ffffff;
+    --primary: #8fb2ff;
+    --secondary: #ebf1ff;
+    --accent: #d31d6c;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* --text: var(--text-dark);
+        --background: var(--background-dark);
+        --primary: var(--primary-dark);
+        --secondary: var(--secondary-dark);
+        --accent: var(--accent-dark); */
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    font-weight: normal;
+}
+
+body {
+    color: var(--text);
+    background: var(--background);
+    transition:
+            color 0.5s,
+            background-color 0.5s;
+    line-height: 1.6;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 15px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    align-items: stretch;
+
+    width: 100%;
+    min-height: 100vh;
+}
+
+@media (min-width: 1240px) {
+    body {
+        max-width: 1400px;
+
+        position: absolute;
+        margin-left: auto;
+        margin-right: auto;
+        left: 0;
+        right: 0;
+
+    }
+}
+
+
+.bold {
+    font-weight: 500;
+}
+
+.primary {
+    color: var(--primary)
+}
