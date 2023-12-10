@@ -1,0 +1,13 @@
+{
+  "clients": {
+    "twitch": {
+      "address": "ws://irc-ws.chat.twitch.tv:80",
+      "protocol": "",
+      "origin": "http://localhost:3000"
+    }
+  },
+  "Credentials": {
+    "user_name": "pre_void",
+    "token": "epd1xiyblzvxw649pst94ext99sqdn"
+  }
+}
