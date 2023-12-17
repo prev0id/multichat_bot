@@ -7,3 +7,6 @@ bin
 
 # vscode
 .vscode
+
+# github runner
+actions-runner
