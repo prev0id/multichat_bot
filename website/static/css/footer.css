@@ -2,7 +2,22 @@
 
 footer {
     width: 100%;
-    height: 2rem;
+    /*    height: 2rem;*/
 
-    background-color: var(--primary);
+    /*    background-color: var(--primary);*/
+
+    display: flex;
+    flex-flow: wrap;
+    gap: 0.5rem 2rem;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 0.5rem;
+}
+
+#footer-items-wrapper {
+    display: flex;
+    flex-flow: wrap;
+    gap: 0.5rem 2rem;
+    align-items: center;
+    justify-content: center;
 }

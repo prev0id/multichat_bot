@@ -1,28 +1,32 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"log/slog"
 	"net/http"
-	"os"
-
-	"github.com/joho/godotenv"
 )
 
-func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+var (
+	port string
+)
 
+func init() {
+	flag.StringVar(&port, "port", "8080", "sets port for serving website, by default 8080")
+}
+
+func main() {
 	http.HandleFunc("/", rootHandler)
 
 	fs := http.FileServer(http.Dir("website/static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	slog.Info("starting server")
+	slog.Info(
+		"starting server",
+		"port", port,
+	)
 
-	if err := http.ListenAndServe(":"+os.Getenv("PORT"), nil); err != nil {
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err.Error())
 	}
 }
