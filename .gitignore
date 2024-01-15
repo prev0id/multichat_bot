@@ -1,12 +1,14 @@
 bin
 *.log
+configs
 
 # jetbrains ide
 *.iml
 .idea
+.fleet
 
 # vscode
 .vscode
 
-# github runner
-actions-runner
+# some macos shit
+*.DS_Store

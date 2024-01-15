@@ -1,13 +1,33 @@
 # MultiChat Bot
 
+## Progress
+
 структура репозитория проекта основана
 на [Standard Go Project Layout](https://github.com/golang-standards/project-layout)
 
-## Progress
-
 ### Backend
 
-+ будет написан на последней версии Go >=1.21.3
+Go 1.21.3.
+
+Дизайн системы:
+![system design](./docs/assets/architecture.png)
+
+#### AppManager
+
+#### Twitch
+
+1) Manager. Предоставляет интерфейс для работы с Twitch, как API, так и IRC.
+2) Message Service. Предоставляет интерфейс для IRC. Нужен для работы с rate limit'ами.
+3) API Manager. Предоставляет интерфейс для работы с API.
+4) IRC Client. Websocket клиент принимающий и отправляющий сообщения.
+5) Processor. Обрабатывает различные типы сообщения приходящих из IRC Client, нужен для удобной единой точки вызова
+   функционала AppManager или twitch.Manager.
+
+#### DataBase
+
+#### Youtube
+
+TODO
 
 ### Frontend
 

@@ -23,7 +23,7 @@ func main() {
 
 	slog.Info(
 		"starting server",
-		"port", port,
+		slog.String("port", port),
 	)
 
 	if err := http.ListenAndServe(":"+port, nil); err != nil {

@@ -15,10 +15,26 @@ function convertPathIDToHTMLID(path) {
 
 const router = async () => {
     const routes = [
-        {path: "/404", id: "", view: () => {console.log("viewing 404")}},
-        {path: "/", id: "stream-settings", view: () => {console.log("viewing stream settings")}},
-        {path: "/bot-settings", id: "bot-settings", view: () => {console.log("viewing bot settings")}},
-        {path: "/commands", id: "commands", view: () => {console.log("viewing commands")}},
+        {
+            path: "/404", id: "", view: () => {
+                console.log("viewing 404")
+            }
+        },
+        {
+            path: "/", id: "stream-settings", view: () => {
+                console.log("viewing stream settings")
+            }
+        },
+        {
+            path: "/bot-settings", id: "bot-settings", view: () => {
+                console.log("viewing bot settings")
+            }
+        },
+        {
+            path: "/commands", id: "commands", view: () => {
+                console.log("viewing commands")
+            }
+        },
     ];
 
     let match = routes.find(route => {
