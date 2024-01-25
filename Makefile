@@ -19,3 +19,7 @@ build:
 .PHONY: lint
 lint:
 	golangci-lint run
+
+.PHONY: generate
+generate:
+	oapi-codegen -config ".oapi-codegen.yaml" ./api/specification.yml

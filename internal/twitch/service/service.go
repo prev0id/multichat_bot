@@ -13,7 +13,7 @@ import (
 )
 
 type messageManager interface {
-	SendChatMessage(msg domain.IRCMessage) error
+	SendChatMessage(chat string, msg domain.IRCMessage) error
 	SendAuthMessage(msg domain.IRCMessage) error
 	SendJoinMessage(msg domain.IRCMessage) error
 }
@@ -21,16 +21,18 @@ type messageManager interface {
 type Service struct {
 	messageManager messageManager
 	token          oauth2.TokenSource
+	chats          chats
 }
 
 func New(manager messageManager, token oauth2.TokenSource) *Service {
 	return &Service{
 		messageManager: manager,
 		token:          token,
+		chats:          newChats(),
 	}
 }
 
-func (s *Service) Connect(ctx context.Context, cfg config.Twitch) error {
+func (s *Service) Connect(cfg config.Twitch) error {
 	token, err := s.token.Token()
 	if err != nil {
 		return err
@@ -51,11 +53,14 @@ func (s *Service) Connect(ctx context.Context, cfg config.Twitch) error {
 	return nil
 }
 
-func (s *Service) JoinChat(chat string) error {
-	msg := &domain.JoinMessage{chat}
+func (s *Service) JoinChat(ctx context.Context, chat string) error {
+	ctx, cancel := context.WithCancelCause(ctx)
+	if err := s.chats.processJoinRequest(chat, cancel); err != nil {
+		return err
+	}
 
-	err := s.messageManager.SendJoinMessage(msg)
-	if err != nil {
+	msg := &domain.JoinMessage{chat}
+	if err := s.messageManager.SendJoinMessage(msg); err != nil {
 		slog.Error(
 			"[message_processor] unable to join chat",
 			slog.String("chat", chat),
@@ -63,12 +68,16 @@ func (s *Service) JoinChat(chat string) error {
 			slog.String("type", domain.IRCCommandJoin),
 			slog.String("message", msg.ToString()),
 		)
+
+		return err
 	}
 
-	return err
+	<-ctx.Done()
+
+	return context.Cause(ctx)
 }
 
-func (s *Service) LeaveChat(chat string) {
+func (s *Service) LeaveChat(chat string) error {
 	msg := domain.PartMessage(chat)
 
 	err := s.messageManager.SendJoinMessage(msg)
@@ -81,6 +90,8 @@ func (s *Service) LeaveChat(chat string) {
 			slog.String("message", msg.ToString()),
 		)
 	}
+
+	return err
 }
 
 func (s *Service) SendPongMessage(rawPingMessage string) {
@@ -104,7 +115,7 @@ func (s *Service) SendTextMessage(chat, text string) {
 		Channel: chat,
 	}
 
-	err := s.messageManager.SendChatMessage(msg)
+	err := s.messageManager.SendChatMessage(chat, msg)
 	if err != nil {
 		slog.Error(
 			"[message_processor] unable to send PrivMessage",

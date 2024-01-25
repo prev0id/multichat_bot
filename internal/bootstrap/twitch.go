@@ -38,12 +38,12 @@ func Twitch(ctx context.Context, cfg config.Twitch) (*twitch.Service, error) {
 	)
 
 	if err := ircClient.Connect(ctx, cfg.IRCServer); err != nil {
-		slog.Error("1", slog.StringValue(err.Error()))
+		slog.Error("unable to connect to twitch irc server", slog.String("error", err.Error()))
 		return nil, err
 	}
 
-	if err := twitchService.Connect(ctx, cfg); err != nil {
-		slog.Error("2", slog.StringValue(err.Error()))
+	if err := twitchService.Connect(cfg); err != nil {
+		slog.Error("unable to bootstrap twitch service", slog.String("error", err.Error()))
 		return nil, err
 	}
 

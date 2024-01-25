@@ -4,6 +4,14 @@ import (
 	"errors"
 
 	"multichat_bot/internal/twitch/domain"
+	"multichat_bot/internal/twitch/service/message_manager/rate_limit"
+)
+
+const (
+	rateLimitAuthAttempts = 20
+	rateLimitJoinAttempts = 20
+	rateLimitChatDefault  = 20
+	rateLimitChatMod      = 100
 )
 
 var (
@@ -17,23 +25,31 @@ type ircClient interface {
 type Manager struct {
 	ircClient ircClient
 
-	chatsRL map[string]windowRateLimit
-	authRL  windowRateLimit
-	joinRL  windowRateLimit
+	chatsRL *rate_limit.Map
+	authRL  *rate_limit.Checker
+	joinRL  *rate_limit.Checker
 }
 
 func New(client ircClient) *Manager {
 	return &Manager{
 		ircClient: client,
+
+		chatsRL: rate_limit.NewMapChecker(rateLimitChatDefault),
+		joinRL:  rate_limit.NewChecker(rateLimitJoinAttempts),
+		authRL:  rate_limit.NewChecker(rateLimitAuthAttempts),
 	}
 }
 
-func (m *Manager) SendChatMessage(msg domain.IRCMessage) error {
+func (m *Manager) SendChatMessage(chat string, msg domain.IRCMessage) error {
+	if !m.chatsRL.IsLimitExceeded(chat) {
+		return ErrorRateLimitExited
+	}
+
 	return m.ircClient.Send(msg.ToString())
 }
 
 func (m *Manager) SendAuthMessage(msg domain.IRCMessage) error {
-	if !m.authRL.isSendAllowed() {
+	if !m.authRL.IsLimitExceeded() {
 		return ErrorRateLimitExited
 	}
 
@@ -41,7 +57,7 @@ func (m *Manager) SendAuthMessage(msg domain.IRCMessage) error {
 }
 
 func (m *Manager) SendJoinMessage(msg domain.IRCMessage) error {
-	if !m.joinRL.isSendAllowed() {
+	if !m.joinRL.IsLimitExceeded() {
 		return ErrorRateLimitExited
 	}
 

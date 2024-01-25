@@ -1,7 +1,8 @@
 package config
 
 type Config struct {
-	Twitch Twitch
+	Twitch Twitch `json:"twitch"`
+	Api    Api    `json:"api"`
 }
 
 type Twitch struct {
@@ -23,4 +24,9 @@ type Oauth struct {
 	ClientSecret string   `json:"client_secret"`
 	Scopes       []string `json:"scopes"`
 	RedirectURL  string   `json:"redirect_url"`
+}
+
+type Api struct {
+	Host string `json:"host"`
+	Port string `json:"port"`
 }

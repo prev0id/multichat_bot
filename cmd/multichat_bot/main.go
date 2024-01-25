@@ -27,10 +27,11 @@ func main() {
 		log.Fatalf("error parsing config: %s", err.Error())
 	}
 
-	_, err = bootstrap.Twitch(appCtx, cfg.Twitch)
+	twitchService, err := bootstrap.Twitch(appCtx, cfg.Twitch)
 	if err != nil {
 		log.Fatalf("can not start twitch service: %s", err.Error())
 	}
 
-	<-appCtx.Done()
+	// should be last
+	bootstrap.API(cfg.Api, twitchService)
 }
