@@ -2,9 +2,6 @@
 
 ## Progress
 
-структура репозитория проекта основана
-на [Standard Go Project Layout](https://github.com/golang-standards/project-layout)
-
 ### Backend
 
 Go 1.21.3.
@@ -23,12 +20,6 @@ Go 1.21.3.
 5) Processor. Обрабатывает различные типы сообщения приходящих из IRC Client, нужен для удобной единой точки вызова
    функционала AppManager или twitch.Manager.
 
-#### DataBase
-
-#### Youtube
-
-TODO
-
 ### Frontend
 
 + singe page website
@@ -38,35 +29,3 @@ TODO
 + [svg collection](https://www.svgrepo.com/collection/coolicons-line-oval-icons/1)
 + [svg with google/twitch](https://www.svgrepo.com/collection/phosphor-bold-icons/)
 + [logo](https://www.svgrepo.com/svg/324471/robot-artificial-intelligence-android)
-
-### Twitch
-
-+ зарегистрировал бота, разбираюсь с api
-+ есть лимит на частоту отправления сообщений ботом
-
-### Youtube
-
-+ регистрировал когда-то давно dev аккаунт в гугловой апишке, надо будет вспоминать как там все работает
-
-### VKPlay
-
-+ похоже публичной апи пока нет. Есть альфа тест, на который можно
-  подать [заявление](https://vk.com/wall-212496568_43917)
-
-## Extra
-
-+ в силу жестких ограничений на использовании апи одним аккаунтом бота на твиче, сделать поддержку пула из ботов которые
-  будут выступать в качестве единой системы
-
-## TODO
-
-[ ] Парсер itc сообщений твича
-[ ] Клиент твича с поддержкой отправки сообщений
-[ ] Автополучение токенов, на данный момент они захардкожены в конфиге
-
-[ ] клиент YT
-
-extra планы
-[ ] Доп возможности по конфигурированию для клиента твича
-[ ] Unit тесты возможно отрефатич большое количество кода)
-[ ] базовые e2e тесты для клиентов
