@@ -27,6 +27,8 @@ func parseSingleMessage(msg string) *domain.Message {
 		rawSource     string
 		rawCommand    string
 		rawBotCommand string
+
+		rawMessage = msg
 	)
 
 	idx := 0
@@ -57,8 +59,8 @@ func parseSingleMessage(msg string) *domain.Message {
 		Tags:       parseTags(rawTags),
 		Command:    parseCommands(rawCommand, rawBotCommand),
 		Parameters: rawBotCommand,
-		Source:     parseSource(rawSource),
-		RawMessage: msg,
+		RawSource:  rawSource,
+		RawMessage: rawMessage,
 	}
 }
 
@@ -111,26 +113,6 @@ func parseCommand(rawCommand string, command *domain.Command) {
 			command.IsCapRequestEnabled = true
 		}
 	}
-}
-
-func parseSource(rawSource string) *domain.Source {
-	result := &domain.Source{
-		RawSource: rawSource,
-	}
-
-	if rawSource == "" {
-		return result
-	}
-
-	sourceParts := strings.Split(rawSource, "!")
-
-	result.Host = sourceParts[0]
-	if len(sourceParts) == 2 {
-		result.Nick = sourceParts[0]
-		result.Host = sourceParts[1]
-	}
-
-	return result
 }
 
 func parseBotCommand(rawBotCommand string, command *domain.Command) {

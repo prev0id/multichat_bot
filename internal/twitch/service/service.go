@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"strings"
 
 	"golang.org/x/oauth2"
 
+	"multichat_bot/internal/common/apperr"
 	"multichat_bot/internal/config"
 
 	"multichat_bot/internal/twitch/domain"
@@ -74,7 +76,26 @@ func (s *Service) JoinChat(ctx context.Context, chat string) error {
 
 	<-ctx.Done()
 
-	return context.Cause(ctx)
+	if err := ctx.Err(); err != nil {
+		return ctx.Err()
+	}
+
+	if err := context.Cause(ctx); err != nil {
+		return apperr.WithHTTPStatus(err, http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+func (s *Service) ValidateJoin(chat string) {
+	err := s.chats.updateToJoined(chat)
+	if err != nil {
+		slog.Error(
+			"[message_processor] unable to validate join",
+			slog.String("error", err.Error()),
+			slog.String("chat", chat),
+		)
+	}
 }
 
 func (s *Service) LeaveChat(chat string) error {

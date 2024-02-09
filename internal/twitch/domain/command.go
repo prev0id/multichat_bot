@@ -1,38 +1,25 @@
 package domain
 
 const (
-	IRCCommandJoin            = "JOIN"
-	IRCCommandPart            = "PART"
-	IRCCommandNotice          = "NOTICE"
-	IRCCommandClearChat       = "CLEARCHAT"
-	IRCCommandHostTarget      = "HOSTTARGET"
-	IRCCommandPrivmsg         = "PRIVMSG"
-	IRCCommandPing            = "PING"
-	IRCCommandCap             = "CAP"
-	IRCCommandGlobalUserState = "GLOBALUSERSTATE"
-	IRCCommandUserState       = "USERSTATE"
-	IRCCommandRoomState       = "ROOMSTATE"
-	IRCCommandReconnect       = "RECONNECT"
-	IRCCommand421             = "421"
-	IRCCommand001             = "001"
-	IRCCommand002             = "002"
-	IRCCommand003             = "003"
-	IRCCommand004             = "004"
-	IRCCommand353             = "353"
-	IRCCommand366             = "366"
-	IRCCommand372             = "372"
-	IRCCommand375             = "375"
-	IRCCommand376             = "376"
-
-	IRCCommandClearMessage = "CLEARMSG"
-	IRCCommandUserNotice   = "USERNOTICE"
+	IRCCommandJoin       = "JOIN"
+	IRCCommandPart       = "PART"
+	IRCCommandNotice     = "NOTICE"
+	IRCCommandClearChat  = "CLEARCHAT"
+	IRCCommandHostTarget = "HOSTTARGET"
+	IRCCommandPrivmsg    = "PRIVMSG"
+	IRCCommandPing       = "PING"
+	IRCCommandCap        = "CAP"
+	IRCCommandUserState  = "USERSTATE"
+	IRCCommandRoomState  = "ROOMSTATE"
+	IRCCommand001        = "001"
+	IRCCommand366        = "366"
 )
 
 type Message struct {
 	Tags       map[string]string
 	Parameters string
 	RawMessage string
-	Source     *Source
+	RawSource  string
 	Command    *Command
 }
 

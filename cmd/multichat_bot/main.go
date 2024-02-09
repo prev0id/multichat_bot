@@ -32,6 +32,7 @@ func main() {
 		log.Fatalf("can not start twitch service: %s", err.Error())
 	}
 
-	// should be last
-	bootstrap.API(cfg.Api, twitchService)
+	if err := bootstrap.API(cfg.Api, twitchService); err != nil {
+		log.Fatalf("can not bootstap api service: %s", err.Error())
+	}
 }

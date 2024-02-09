@@ -13,10 +13,10 @@
 + Официальный пакет для OAuth2 https://pkg.go.dev/golang.org/x/oauth2
 + Официальный пакет с Websocket https://pkg.go.dev/golang.org/x/net
 + Google-api-go-client для YouTube клиента https://github.com/googleapis/google-api-go-client
-+ Генератор по OpenAPI3 контракту https://github.com/deepmap/oapi-codegen
-+ Chi-go простейший http роутер https://github.com/go-chi/chi
 + Скрипт по обновлению на последнюю версию Go https://github.com/udhos/update-golang
 + Стандарт Go-проекта https://github.com/golang-standards/project-layout
++ error handling https://boldlygo.tech/posts/2024-01-08-error-handling/
++ Разработка REST-серверов на Go https://habr.com/ru/companies/ruvds/articles/566198/
 
 ## Website
 

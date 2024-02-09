@@ -10,6 +10,7 @@ import (
 type twitchService interface {
 	SendTextMessage(chat, text string)
 	SendPongMessage(rawPingMessage string)
+	ValidateJoin(chat string)
 }
 
 type processFn func(ctx context.Context, msg *domain.Message)
@@ -27,6 +28,7 @@ func New(service twitchService) *Processor {
 	processor.processors = map[string]processFn{
 		domain.IRCCommandPrivmsg: processor.privmsg,
 		domain.IRCCommandPing:    processor.ping,
+		domain.IRCCommand366:     processor.endOfNames,
 	}
 
 	return processor

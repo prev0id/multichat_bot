@@ -1,11 +1,6 @@
 BUILD_PATH ?= ./cmd/multichat_bot
 WEBSITE_BUILD_PATH ?= ./cmd/serve_website
 BIN_PATH ?= ./bin
-SERVE_PORT ?= 8080
-
-.PHONY: serve
-serve:
-	go run $(WEBSITE_BUILD_PATH) port=$(SERVE_PORT)
 
 .PHONY: run
 run:

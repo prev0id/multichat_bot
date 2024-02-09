@@ -1,33 +1,31 @@
 package bootstrap
 
 import (
-	"log"
 	"log/slog"
 	"net"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-
-	"multichat_bot/internal/api"
-	desc "multichat_bot/internal/api/gen"
+	"multichat_bot/internal/api/server"
+	"multichat_bot/internal/api/server/middleware"
+	"multichat_bot/internal/api/service"
 	"multichat_bot/internal/config"
 	twitch "multichat_bot/internal/twitch/service"
 )
 
-func API(cfg config.Api, twitchService *twitch.Service) {
-	server := api.NewServer(twitchService)
+func API(cfg config.Api, twitchService *twitch.Service) error {
+	httpServer := server.New()
+	httpServer.WithMiddleware(
+		middleware.WithPanicRecovery,
+		middleware.WithLogging,
+	)
 
-	handler := desc.NewStrictHandler(server, nil)
+	apiService := service.New(twitchService)
+	httpServer.RegisterHandler("/", apiService.Default)
+	httpServer.RegisterHandler("/twitch/join", apiService.TwitchJoin)
+	httpServer.RegisterHandler("/twitch/leave", apiService.TwitchLeave)
 
-	router := chi.NewRouter()
+	address := net.JoinHostPort(cfg.Host, cfg.Port)
+	slog.Info("starting server", slog.String("address", address))
 
-	s := &http.Server{
-		Handler: desc.HandlerFromMux(handler, router),
-		Addr:    net.JoinHostPort(cfg.Host, cfg.Port),
-	}
-
-	slog.Info("starting http server", slog.String("PATH", s.Addr))
-	if err := s.ListenAndServe(); err != nil {
-		log.Fatalf("error while serving api: %s", err.Error())
-	}
+	return http.ListenAndServe(address, httpServer.GetHandler())
 }
