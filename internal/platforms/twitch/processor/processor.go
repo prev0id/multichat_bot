@@ -4,7 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"multichat_bot/internal/twitch/domain"
+	global_domain "multichat_bot/internal/domain"
+	"multichat_bot/internal/platforms/twitch/domain"
 )
 
 type twitchService interface {
@@ -18,11 +19,13 @@ type processFn func(ctx context.Context, msg *domain.Message)
 type Processor struct {
 	service    twitchService
 	processors map[string]processFn
+	broadcast  chan<- *global_domain.Message
 }
 
-func New(service twitchService) *Processor {
+func New(service twitchService, broadcast chan<- *global_domain.Message) *Processor {
 	processor := &Processor{
-		service: service,
+		service:   service,
+		broadcast: broadcast,
 	}
 
 	processor.processors = map[string]processFn{

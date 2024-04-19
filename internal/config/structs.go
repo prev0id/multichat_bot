@@ -30,3 +30,7 @@ type Api struct {
 	Host string `json:"host"`
 	Port string `json:"port"`
 }
+
+type Redis struct {
+	URL string `json:"url"`
+}

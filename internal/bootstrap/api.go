@@ -1,7 +1,6 @@
 package bootstrap
 
 import (
-	"log/slog"
 	"net"
 	"net/http"
 
@@ -9,7 +8,7 @@ import (
 	"multichat_bot/internal/api/server/middleware"
 	"multichat_bot/internal/api/service"
 	"multichat_bot/internal/config"
-	twitch "multichat_bot/internal/twitch/service"
+	twitch "multichat_bot/internal/platforms/twitch/service"
 )
 
 func API(cfg config.Api, twitchService *twitch.Service) error {
@@ -25,7 +24,6 @@ func API(cfg config.Api, twitchService *twitch.Service) error {
 	httpServer.RegisterHandler("/twitch/leave", apiService.TwitchLeave)
 
 	address := net.JoinHostPort(cfg.Host, cfg.Port)
-	slog.Info("starting server", slog.String("address", address))
 
 	return http.ListenAndServe(address, httpServer.GetHandler())
 }

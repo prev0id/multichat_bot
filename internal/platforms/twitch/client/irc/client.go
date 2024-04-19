@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/net/websocket"
 
-	"multichat_bot/internal/twitch/domain"
+	"multichat_bot/internal/platforms/twitch/domain"
 )
 
 type messageProcessor interface {

@@ -4,6 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
+
+	"multichat_bot/internal/domain/logger"
 )
 
 func WithPanicRecovery(next http.Handler) http.Handler {
@@ -14,7 +16,7 @@ func WithPanicRecovery(next http.Handler) http.Handler {
 
 				slog.Error(
 					"recovered",
-					slog.String("stack", string(debug.Stack())),
+					slog.String(logger.Stack, string(debug.Stack())),
 				)
 			}
 		}()

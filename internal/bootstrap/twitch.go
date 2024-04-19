@@ -8,13 +8,15 @@ import (
 	ouath2_twitch "golang.org/x/oauth2/twitch"
 
 	"multichat_bot/internal/config"
-	"multichat_bot/internal/twitch/client/irc"
-	"multichat_bot/internal/twitch/processor"
-	twitch "multichat_bot/internal/twitch/service"
-	"multichat_bot/internal/twitch/service/message_manager"
+	"multichat_bot/internal/domain"
+	"multichat_bot/internal/domain/logger"
+	"multichat_bot/internal/platforms/twitch/client/irc"
+	"multichat_bot/internal/platforms/twitch/processor"
+	twitch "multichat_bot/internal/platforms/twitch/service"
+	"multichat_bot/internal/platforms/twitch/service/message_manager"
 )
 
-func Twitch(ctx context.Context, cfg config.Twitch) (*twitch.Service, error) {
+func Twitch(ctx context.Context, cfg config.Twitch, broadcast chan<- *domain.Message) (*twitch.Service, error) {
 	token := &oauth2.Token{
 		RefreshToken: cfg.Oauth.RefreshToken,
 	}
@@ -33,17 +35,15 @@ func Twitch(ctx context.Context, cfg config.Twitch) (*twitch.Service, error) {
 		oauthConfig.TokenSource(ctx, token),
 	)
 
-	ircClient.WithMessageProcessor(
-		processor.New(twitchService),
-	)
+	ircClient.WithMessageProcessor(processor.New(twitchService, broadcast))
 
-	if err := ircClient.Connect(ctx, cfg.IRCServer); err != nil {
-		slog.Error("unable to connect to twitch irc server", slog.String("error", err.Error()))
+	if err := ircClient.StartWorker(ctx, cfg.IRCServer); err != nil {
+		slog.Error("unable to connect to twitch irc server", slog.String(logger.Error, err.Error()))
 		return nil, err
 	}
 
 	if err := twitchService.Connect(cfg); err != nil {
-		slog.Error("unable to bootstrap twitch service", slog.String("error", err.Error()))
+		slog.Error("unable to bootstrap twitch service", slog.String(logger.Error, err.Error()))
 		return nil, err
 	}
 

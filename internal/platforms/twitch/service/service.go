@@ -10,8 +10,9 @@ import (
 
 	"multichat_bot/internal/common/apperr"
 	"multichat_bot/internal/config"
+	"multichat_bot/internal/domain/logger"
 
-	"multichat_bot/internal/twitch/domain"
+	"multichat_bot/internal/platforms/twitch/domain"
 )
 
 type messageManager interface {
@@ -65,10 +66,10 @@ func (s *Service) JoinChat(ctx context.Context, chat string) error {
 	if err := s.messageManager.SendJoinMessage(msg); err != nil {
 		slog.Error(
 			"[message_processor] unable to join chat",
-			slog.String("chat", chat),
-			slog.String("error", err.Error()),
-			slog.String("type", domain.IRCCommandJoin),
-			slog.String("message", msg.ToString()),
+			slog.String(logger.User, chat),
+			slog.String(logger.Error, err.Error()),
+			slog.String(logger.Type, domain.IRCCommandJoin),
+			slog.String(logger.Message, msg.ToString()),
 		)
 
 		return err
@@ -92,8 +93,8 @@ func (s *Service) ValidateJoin(chat string) {
 	if err != nil {
 		slog.Error(
 			"[message_processor] unable to validate join",
-			slog.String("error", err.Error()),
-			slog.String("chat", chat),
+			slog.String(logger.Error, err.Error()),
+			slog.String(logger.User, chat),
 		)
 	}
 }
@@ -105,10 +106,10 @@ func (s *Service) LeaveChat(chat string) error {
 	if err != nil {
 		slog.Error(
 			"[message_processor] unable to leave chat",
-			slog.String("chat", chat),
-			slog.String("error", err.Error()),
-			slog.String("type", domain.IRCCommandPart),
-			slog.String("message", msg.ToString()),
+			slog.String(logger.User, chat),
+			slog.String(logger.Error, err.Error()),
+			slog.String(logger.Type, domain.IRCCommandPart),
+			slog.String(logger.Message, msg.ToString()),
 		)
 	}
 
@@ -123,9 +124,9 @@ func (s *Service) SendPongMessage(rawPingMessage string) {
 	if err != nil {
 		slog.Error(
 			"[message_processor] unable to send Pong message",
-			slog.String("error", err.Error()),
-			slog.String("type", domain.IRCCommandPing),
-			slog.String("message", msg.ToString()),
+			slog.String(logger.Error, err.Error()),
+			slog.String(logger.Type, domain.IRCCommandPing),
+			slog.String(logger.Message, msg.ToString()),
 		)
 	}
 }
@@ -140,9 +141,9 @@ func (s *Service) SendTextMessage(chat, text string) {
 	if err != nil {
 		slog.Error(
 			"[message_processor] unable to send PrivMessage",
-			slog.String("error", err.Error()),
-			slog.String("type", domain.IRCCommandPrivmsg),
-			slog.String("message", msg.ToString()),
+			slog.String(logger.Error, err.Error()),
+			slog.String(logger.Type, domain.IRCCommandPrivmsg),
+			slog.String(logger.Message, msg.ToString()),
 		)
 	}
 }

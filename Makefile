@@ -25,3 +25,15 @@ lint: .install_golangci_lin
 .PHONY: generate
 generate: .install_oapi_codegen
 	oapi-codegen -config ".oapi-codegen.yaml" ./api/specification.yml
+
+.PHONY: redis
+redis:
+	docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+
+.PHONY: start-tailwind
+start-tailwind:
+	npx tailwindcss -i ./website/src/main.css -o ./website/src/compiled.css --watch --minify
+
+.PHONY: .postgres
+.postgres:
+	docker run

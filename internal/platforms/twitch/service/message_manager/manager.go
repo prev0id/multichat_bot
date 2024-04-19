@@ -3,8 +3,8 @@ package message_manager
 import (
 	"errors"
 
-	"multichat_bot/internal/twitch/domain"
-	"multichat_bot/internal/twitch/service/message_manager/rate_limit"
+	"multichat_bot/internal/platforms/twitch/domain"
+	"multichat_bot/internal/platforms/twitch/service/message_manager/rate_limit"
 )
 
 const (

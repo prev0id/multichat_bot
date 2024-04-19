@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 
+	"multichat_bot/internal/app/message_broadcaster"
 	"multichat_bot/internal/bootstrap"
 	"multichat_bot/internal/config"
 )
@@ -27,10 +28,14 @@ func main() {
 		log.Fatalf("error parsing config: %s", err.Error())
 	}
 
-	twitchService, err := bootstrap.Twitch(appCtx, cfg.Twitch)
+	messageManager := message_broadcaster.New()
+
+	twitchService, err := bootstrap.Twitch(appCtx, cfg.Twitch, messageManager.GetMessageChannel())
 	if err != nil {
 		log.Fatalf("can not start twitch service: %s", err.Error())
 	}
+
+	messageManager.StartWorker(appCtx)
 
 	if err := bootstrap.API(cfg.Api, twitchService); err != nil {
 		log.Fatalf("can not bootstap api service: %s", err.Error())

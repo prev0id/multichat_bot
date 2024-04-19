@@ -3,7 +3,7 @@ package processor
 import (
 	"context"
 
-	"multichat_bot/internal/twitch/domain"
+	"multichat_bot/internal/platforms/twitch/domain"
 )
 
 func (p *Processor) ping(_ context.Context, msg *domain.Message) {

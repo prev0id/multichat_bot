@@ -5,11 +5,12 @@ import (
 	"log/slog"
 
 	"multichat_bot/internal/config"
+	"multichat_bot/internal/domain/logger"
 
 	"golang.org/x/net/websocket"
 )
 
-func (c *Client) Connect(ctx context.Context, cfg config.IRCServer) error {
+func (c *Client) StartWorker(ctx context.Context, cfg config.IRCServer) error {
 	ws, err := websocket.Dial(cfg.Address, cfg.Protocol, cfg.Origin)
 	if err != nil {
 		return err
@@ -29,14 +30,14 @@ func (c *Client) startReceiving(ctx context.Context) {
 		select {
 
 		case <-ctx.Done():
-			slog.Info("[twitch_irc_client] stopped", slog.String("reason", ctx.Err().Error()))
+			slog.Info("[twitch_irc_client] stopped", slog.String(logger.Error, ctx.Err().Error()))
 			return
 
 		default:
 			err := c.receive(ctx)
 			if err != nil {
 				slog.Error("[twitch_irc_client] recieved errror",
-					slog.String("error", err.Error()),
+					slog.String(logger.Error, err.Error()),
 				)
 				return
 			}
