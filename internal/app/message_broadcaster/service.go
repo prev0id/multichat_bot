@@ -9,11 +9,11 @@ import (
 )
 
 type db interface {
-	GetUserByPlatform(platform domain.Platform, user string) (*domain.User, error)
+	GetUserByChannel(platform domain.Platform, channel string) (domain.User, error)
 }
 
 type platformService interface {
-	SendMessage(message *domain.Message, user *domain.User) error
+	SendMessage(message *domain.Message, channel string) error
 }
 
 type Service struct {
@@ -52,7 +52,7 @@ func (s *Service) GetMessageChannel() chan<- *domain.Message {
 }
 
 func (s *Service) broadcast(msg *domain.Message) {
-	user, err := s.db.GetUserByPlatform(msg.Platform, msg.From)
+	user, err := s.db.GetUserByChannel(msg.Platform, msg.Channel)
 	if err != nil {
 		slog.Error(
 			"messageManager::broadcast unable to get user from db",
@@ -61,14 +61,14 @@ func (s *Service) broadcast(msg *domain.Message) {
 		return
 	}
 
-	for platform := range user.Platforms {
+	for platform, channel := range user.Platforms {
 		service, ok := s.platforms[platform]
 		if !ok {
 			slog.Warn("messageManager::broadcast unable to find platform", slog.String(logger.Platform, string(platform)))
 			continue
 		}
 
-		if err := service.SendMessage(msg, user); err != nil {
+		if err := service.SendMessage(msg, channel); err != nil {
 			slog.Error("messageManager::broadcast error occurred while sending the message",
 				slog.String(logger.Error, err.Error()),
 				slog.Any(logger.User, user),

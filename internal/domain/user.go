@@ -5,6 +5,12 @@ import (
 )
 
 type User struct {
-	UUID      uuid.UUID
 	Platforms map[Platform]string
+	UUID      uuid.UUID
+}
+
+type UserSettings struct {
+	IsBotJoined map[Platform]bool
+	BannedUsers map[Platform][]string
+	BannedWords []string
 }

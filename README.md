@@ -29,3 +29,17 @@ Go 1.20.0
 - [svg collection](https://www.svgrepo.com/collection/coolicons-line-oval-icons/1)
 - [svg with google/twitch](https://www.svgrepo.com/collection/phosphor-bold-icons/)
 - [logo](https://www.svgrepo.com/svg/324471/robot-artificial-intelligence-android)
+
+
+svg by: krystonschwarze
+https://www.svgrepo.com/svg/511185/user-02
+https://www.svgrepo.com/svg/510970/external-link
+https://www.svgrepo.com/svg/511122/settings
+https://www.svgrepo.com/svg/510988/folder-code
+
+by: Klever Space
+https://www.svgrepo.com/svg/488713/twitch
+https://www.svgrepo.com/svg/488595/google
+
+favicon by Iconhub:
+https://www.svgrepo.com/svg/463649/settings

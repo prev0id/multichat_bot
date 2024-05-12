@@ -2,37 +2,32 @@ package database
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
+
+	"multichat_bot/internal/config"
+	"multichat_bot/internal/database/adapter"
 	"multichat_bot/internal/database/async_cache"
-	"multichat_bot/internal/database/domain"
-	global_domain "multichat_bot/internal/domain"
+	"multichat_bot/internal/domain"
 )
-
-var (
-	errUserNotFound = errors.New("user not found")
-)
-
-type db interface {
-	ListUsers(ctx context.Context) ([]*global_domain.User, error)
-
-	SetPlatformToUser(ctx context.Context, uuid string, platform domain.PlatformKey) error
-	GetPlatfromToUser(ctx context.Context, uuid string, platform domain.PlatformName) (string, error)
-	SetPlatfromConnection(ctx context.Context, from, to domain.PlatformKey)
-}
 
 type Manager struct {
-	db    db
+	db    *adapter.DB
 	cache *async_cache.Cache
 }
 
-func New(ctx context.Context, db db, refresh time.Duration) (*Manager, error) {
-	cache := async_cache.New(db.ListUsers, refresh)
+func New(ctx context.Context, cfg config.DB) (*Manager, error) {
+	db, err := adapter.New(cfg.DBPath)
+	if err != nil {
+		return nil, err
+	}
+
+	cache := async_cache.New(db.ListUsers, time.Second)
 
 	if err := cache.StartSyncing(ctx); err != nil {
-		return nil, fmt.Errorf("db_manager::cache first sync failed: %s", err.Error())
+		return nil, fmt.Errorf("db_manager::cache first sync failed: %w", err)
 	}
 
 	return &Manager{
@@ -41,50 +36,40 @@ func New(ctx context.Context, db db, refresh time.Duration) (*Manager, error) {
 	}, nil
 }
 
-func (m *Manager) GetUserByPlatform(platform global_domain.Platform, username string) (*global_domain.User, error) {
-	list := m.cache.ListPlatform(platform)
-	if list == nil {
-		return nil, errUserNotFound
+func (m *Manager) GetUserByChannel(platform domain.Platform, channel string) (domain.User, error) {
+	user, err := m.cache.GetByPlatform(platform, channel)
+	if err != nil {
+		return domain.User{}, fmt.Errorf("db_manager::get_by_platform get failed: %w", err)
 	}
+	return user, nil
+}
 
-	user, ok := list[username]
-	if !ok {
-		return nil, errUserNotFound
+func (m *Manager) GetUserByUUID(userUUID uuid.UUID) (domain.User, error) {
+	user, err := m.cache.GetByUUID(userUUID)
+	if err != nil {
+		return domain.User{}, fmt.Errorf("db_manager::get_by_uuid get failed: %w", err)
 	}
 
 	return user, nil
 }
 
-func (m *Manager) AddTwitchChatToUser(ctx context.Context, uuid, chat string) error {
-	if err := m.db.SetPlatformToUser(ctx, uuid, domain.PlatformKey{Name: domain.Twitch, Value: chat}); err != nil {
-		return err
+func (m *Manager) UpdateUserPlatform(userUUID uuid.UUID, platform domain.Platform, channel string) error {
+	return m.updatePlatform(userUUID, platform, channel)
+}
+
+func (m *Manager) RemoveUserPlatform(userUUID uuid.UUID, platform domain.Platform) error {
+	return m.updatePlatform(userUUID, platform, "")
+}
+
+func (m *Manager) updatePlatform(userUUID uuid.UUID, platform domain.Platform, channel string) error {
+	if err := m.db.UpdateUserPlatform(userUUID.String(), platform, channel); err != nil {
+		return fmt.Errorf("db_manager::update db failed: %w", err)
+	}
+
+	err := m.cache.UpdatePlatformByUUID(userUUID, platform, channel)
+	if err != nil {
+		return fmt.Errorf("db_manager::update cache failed: %w", err)
 	}
 
 	return nil
-}
-
-func (m *Manager) AddYoutubeChatID(ctx context.Context, uuid, chatID string) error {
-	if err := m.db.SetPlatformToUser(ctx, uuid, domain.PlatformKey{Name: domain.Youtube, Value: chatID}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Manager) GetTwitchChat(ctx context.Context, uuid string) (string, error) {
-	chat, err := m.db.GetPlatfromToUser(ctx, uuid, domain.Twitch)
-	if err != nil {
-		return "", err
-	}
-
-	return chat, nil
-}
-
-func (m *Manager) GetYoutubeChatID(ctx context.Context, uuid string) (string, error) {
-	chatID, err := m.db.GetPlatfromToUser(ctx, uuid, domain.Youtube)
-	if err != nil {
-		return "", err
-	}
-
-	return chatID, nil
 }

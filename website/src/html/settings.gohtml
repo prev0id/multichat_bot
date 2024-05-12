@@ -1,0 +1,62 @@
+{{ define "main" }}
+  <div class="grid grid-flow-row gap-4">
+    <div
+            class="p-3 border-2 border-dashed border-black rounded-xl shadow-lg flex flex-row items-center gap-4"
+    >
+      <p>Bot is <span class="font-semibold">enabled</span></p>
+      <button
+              id="bot_disabler"
+              type="submit"
+              class="rounded-md bg-blue-400 px-2 py-1 text-base text-white shadow-lg hover:bg-red-500"
+      >
+        Join Chat
+      </button>
+      <button
+              id="bot_disabler"
+              type="submit"
+              class="rounded-md bg-blue-400 px-2 py-1 text-base text-white shadow-lg hover:bg-red-500"
+      >
+        Join Chat
+      </button>
+
+    </div>
+    <div
+            class="p-3 border-2 border-dashed border-black rounded-xl shadow-lg flex flex-col gap-2"
+    >
+      <label for="sender_disabler" class="text-lg font-medium"
+      >Disable forwarding from:</label
+      >
+      <form hx-post="/add/ban_word"  hx-trigger="keyup[keyCode==13]">
+        <input
+                id="sender_disabler"
+                type="text"
+                placeholder="nightbot"
+                class="form-control bg-blue-100 border border-black text-sm rounded-lg w-full p-2.5"
+        />
+        <input
+                type="submit"
+                class="rounded-md bg-blue-400 px-2 py-1 text-base text-white shadow-lg hover:bg-red-500"
+        />
+      </form>
+      <p class="text-base">
+        write a channel of user to disable messages from them, e.g. nightbot.
+      </p>
+      <div class="flex flex-row flex-wrap gap-2"></div>
+    </div>
+    <div
+            class="p-3 border-2 border-dashed border-black rounded-xl shadow-lg flex flex-col gap-2"
+    >
+      <label for="word_disabler" class="text-lg font-medium">Ban words:</label>
+      <input
+              id="word_disabler"
+              type="text"
+              placeholder="cheese"
+              class="bg-blue-100 border border-black text-sm rounded-lg w-full p-2.5"
+      />
+      <p class="text-base">
+        write the words that you don't want the bot to forward, e.g. cheese.
+      </p>
+      <div class="flex flex-row flex-wrap gap-2"></div>
+    </div>
+  </div>
+{{ end }}
