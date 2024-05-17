@@ -1,0 +1,3 @@
+multichatbot.ru {
+    reverse_proxy server:7000
+}

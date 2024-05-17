@@ -16,4 +16,5 @@ var (
 		Twitch.String():  Twitch,
 		YouTube.String(): YouTube,
 	}
+	Platforms = []Platform{Twitch, YouTube}
 )

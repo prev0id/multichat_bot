@@ -1,8 +1,8 @@
 package user
 
 import (
-	"github.com/google/uuid"
-
+	"multichat_bot/internal/common/cookie"
+	"multichat_bot/internal/database"
 	"multichat_bot/internal/domain"
 )
 
@@ -11,20 +11,17 @@ type platformService interface {
 	Leave(user string) error
 }
 
-type db interface {
-	UpdateUserPlatform(userUUID uuid.UUID, platform domain.Platform, channel string) error
-	RemoveUserPlatform(userUUID uuid.UUID, platform domain.Platform) error
-}
-
 type Service struct {
 	platforms map[domain.Platform]platformService
-	db        db
+	cookies   *cookie.Store
+	db        *database.Manager
 }
 
-func NewService(db db) *Service {
+func NewService(db *database.Manager, cookies *cookie.Store) *Service {
 	return &Service{
 		platforms: make(map[domain.Platform]platformService, len(domain.StringToPlatform)),
 		db:        db,
+		cookies:   cookies,
 	}
 }
 

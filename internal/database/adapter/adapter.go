@@ -6,8 +6,7 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3" // поддержка sqlite3 для goqu
-	"github.com/google/uuid"
-	_ "modernc.org/sqlite" // драйвер sqlite3
+	_ "modernc.org/sqlite"                             // драйвер sqlite3
 
 	"multichat_bot/internal/domain"
 )
@@ -15,31 +14,41 @@ import (
 const (
 	dialect = "sqlite"
 
-	tableUser  = "user"
-	columnID   = "id"
-	columnUUID = "uuid"
+	tableUser = "user"
+	columnID  = "id"
 
 	tablePlatform = "platform"
-	columnUserID  = "user_id"
-	columnName    = "name"
-	columnEmail   = "email"
-	columnChannel = "channel"
+
+	columnUserID        = "user_id"
+	columnName          = "name"
+	columnChannel       = "channel"
+	columnAccessToken   = "access_token"
+	columnRefreshToken  = "refresh_token"
+	columnExpiresIn     = "expires_in"
+	columnDisabledUsers = "disabled_users"
+	columnBannedWords   = "banned_words"
+	columnIsJoined      = "is_joined"
 )
 
 type DB struct {
 	db *sql.DB
 }
 
-type user struct {
-	id   int
-	uuid uuid.UUID
+type userRow struct {
+	id int64
 }
 
-type platform struct {
-	name    string
-	email   string
-	channel string
-	userID  int
+type platformRow struct {
+	Name          string `db:"name"`
+	ID            string `db:"id"`
+	Channel       string `db:"channel"`
+	AccessToken   string `db:"access_token"`
+	RefreshToken  string `db:"refresh_token"`
+	ExpiresIn     string `db:"expires_in"`
+	DisabledUsers string `db:"disabled_users"`
+	BannedWords   string `db:"banned_words"`
+	UserID        int64  `db:"user_id"`
+	IsJoined      int    `db:"is_joined"`
 }
 
 func New(path string) (*DB, error) {
@@ -53,79 +62,148 @@ func New(path string) (*DB, error) {
 }
 
 func (db *DB) ListUsers() ([]*domain.User, error) {
-	users, err := db.list()
+	users, err := db.listUserTable()
 	if err != nil {
 		return nil, err
 	}
 
-	platforms, err := db.listPlatform()
+	platforms, err := db.listPlatformTable()
 	if err != nil {
 		return nil, err
 	}
 
 	result := make([]*domain.User, 0, len(users))
 	for _, user := range users {
-		domainUser := &domain.User{
-			UUID:      user.uuid,
-			Platforms: make(map[domain.Platform]string, len(platforms[user.id])),
+		configs, err := convertPlatformsToDomain(platforms[user.id])
+		if err != nil {
+			return nil, err
 		}
 
-		for _, userPlatform := range platforms[user.id] {
-			platform := domain.StringToPlatform[userPlatform.name]
-			domainUser.Platforms[platform] = userPlatform.channel
-		}
-
-		result = append(result, domainUser)
+		result = append(result, &domain.User{
+			ID:        user.id,
+			Platforms: configs,
+		})
 	}
 
 	return result, nil
 }
 
-func (db *DB) NewUser(userUUID string) error {
+func (db *DB) NewUser() (int64, error) {
 	query, _, err := goqu.Dialect(dialect).
 		Insert(tableUser).
-		Cols(columnUUID).
-		Vals(goqu.Vals{userUUID}).
-		ToSQL()
+		Cols(columnID).
+		FromQuery(
+			goqu.From(tableUser).
+				Select(
+					goqu.L("ifnull(max(id), 0) + 1"),
+				),
+		).ToSQL()
 
 	if err != nil {
-		return fmt.Errorf("db::new_user error creating query: %w", err)
+		return 0, fmt.Errorf("db::new_user error creating query: %w", err)
+	}
+
+	res, err := db.db.Exec(query)
+	if err != nil {
+		return 0, fmt.Errorf("db::new_user error executing query: %w", err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("db::new_user error getting last insert id: %w", err)
+	}
+
+	return id, nil
+}
+
+func (db *DB) UpsertPlatform(id int64, platform domain.Platform, config *domain.PlatformConfig) error {
+	converted := convertPlatformToDB(id, platform, config)
+
+	query, _, err := goqu.Dialect(dialect).
+		Insert(tablePlatform).
+		Cols(
+			columnUserID,
+			columnName,
+			columnID,
+			columnChannel,
+			columnIsJoined,
+			columnAccessToken,
+			columnRefreshToken,
+			columnExpiresIn,
+			columnDisabledUsers,
+			columnBannedWords,
+		).
+		Rows(
+			converted,
+		).OnConflict(
+		goqu.DoUpdate(columnID, converted),
+	).ToSQL()
+
+	if err != nil {
+		return fmt.Errorf("db::upsert_platform error creating query: %w", err)
 	}
 
 	_, err = db.db.Exec(query)
 	if err != nil {
-		return fmt.Errorf("db::new_user error executing query: %w", err)
+		return fmt.Errorf("db::upsert_platform error exequting query: %w", err)
 	}
 
 	return nil
-
 }
 
-func (db *DB) UpdateUserPlatform(userUUID string, platform domain.Platform, value string) error {
+func (db *DB) ChangeJoined(id int64, platform domain.Platform, value bool) error {
 	query, _, err := goqu.Dialect(dialect).
-		Update(tableUser).
-		Set(goqu.Record{
-			columnName:    platform.String(),
-			columnChannel: value,
-		}).
-		Where(goqu.Ex{columnID: userUUID}).
+		Update(tablePlatform).
+		Where(
+			goqu.And(
+				goqu.C(columnName).Eq(platform.String()),
+				goqu.C(columnUserID).Eq(id),
+			),
+		).
+		Set(
+			goqu.Record{columnIsJoined: value},
+		).
 		ToSQL()
 
 	if err != nil {
-		return fmt.Errorf("db::update_user_platform error creating query: %w", err)
+		return fmt.Errorf("db::change_joined error creating query: %w", err)
 	}
 
 	_, err = db.db.Exec(query)
 	if err != nil {
-		return fmt.Errorf("db::update_user_platform error executing query: %w", err)
+		return fmt.Errorf("db::change_joined error exequting query: %w", err)
 	}
 
 	return nil
 }
 
-func (db *DB) list() ([]user, error) {
+func (db *DB) DeletePlatform(id int64, platform domain.Platform) error {
 	query, _, err := goqu.Dialect(dialect).
-		Select(columnID, columnUUID).
+		Delete(tablePlatform).
+		Where(
+			goqu.And(
+				goqu.C(columnName).Eq(platform.String()),
+				goqu.C(columnUserID).Eq(id),
+			),
+		).
+		ToSQL()
+
+	if err != nil {
+		return fmt.Errorf("db::delete_platform error creating query: %w", err)
+	}
+
+	_, err = db.db.Exec(query)
+
+	if err != nil {
+		return fmt.Errorf("db::delete_platform error exequting query: %w", err)
+	}
+
+	return nil
+}
+
+func (db *DB) listUserTable() ([]userRow, error) {
+	query, _, err := goqu.Dialect(dialect).
+		Select(columnID).
 		From(tableUser).
 		ToSQL()
 
@@ -139,34 +217,39 @@ func (db *DB) list() ([]user, error) {
 	}
 	defer rows.Close() //nolint:errcheck
 
-	result := make([]user, 0)
+	result := make([]userRow, 0)
 	for rows.Next() {
 		var (
-			userUUID string
-			userID   int
+			userID int64
 		)
-		if err := rows.Scan(&userID, &userUUID); err != nil {
+
+		if err := rows.Scan(&userID); err != nil {
 			return nil, fmt.Errorf("db::list_users error scanning row: %w", err)
 		}
 
-		parsedUUID, err := uuid.Parse(userUUID)
-		if err != nil {
-			return nil, fmt.Errorf("db::list_users error parsing user uuid (%s): %w", userUUID, err)
-		}
-
-		result = append(result, user{
-			id:   userID,
-			uuid: parsedUUID,
+		result = append(result, userRow{
+			id: userID,
 		})
 	}
 
 	return result, nil
 }
 
-func (db *DB) listPlatform() (map[int][]platform, error) {
+func (db *DB) listPlatformTable() (map[int64][]platformRow, error) {
 	query, _, err := goqu.Dialect(dialect).
-		Select(columnUserID, columnName, columnEmail, columnChannel).
-		From(tableUser).
+		Select(
+			columnUserID,
+			columnName,
+			columnID,
+			columnChannel,
+			columnIsJoined,
+			columnAccessToken,
+			columnRefreshToken,
+			columnExpiresIn,
+			columnDisabledUsers,
+			columnBannedWords,
+		).
+		From(tablePlatform).
 		ToSQL()
 
 	if err != nil {
@@ -179,23 +262,49 @@ func (db *DB) listPlatform() (map[int][]platform, error) {
 	}
 	defer rows.Close() //nolint:errcheck
 
-	result := make(map[int][]platform)
+	result := make(map[int64][]platformRow)
 	for rows.Next() {
 		var (
-			userID  int
-			name    string
-			email   string
-			channel string
+			userID        int64
+			name          string
+			id            string
+			channel       string
+			isJoined      int
+			accessToken   string
+			refreshToken  string
+			expiresIn     string
+			disabledUsers string
+			bannedWords   string
 		)
-		if err := rows.Scan(&userID, &name, &email, &channel); err != nil {
+
+		err := rows.Scan(
+			&userID,
+			&name,
+			&id,
+			&channel,
+			&isJoined,
+			&accessToken,
+			&refreshToken,
+			&expiresIn,
+			&disabledUsers,
+			&bannedWords,
+		)
+
+		if err != nil {
 			return nil, fmt.Errorf("db::list_platforms error scanning row: %w", err)
 		}
 
-		result[userID] = append(result[userID], platform{
-			userID:  userID,
-			name:    name,
-			email:   email,
-			channel: channel,
+		result[userID] = append(result[userID], platformRow{
+			UserID:        userID,
+			Name:          name,
+			ID:            id,
+			Channel:       channel,
+			IsJoined:      isJoined,
+			AccessToken:   accessToken,
+			RefreshToken:  refreshToken,
+			ExpiresIn:     expiresIn,
+			DisabledUsers: disabledUsers,
+			BannedWords:   bannedWords,
 		})
 	}
 

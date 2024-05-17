@@ -44,6 +44,7 @@ func Serve(cfg config.API, userService *user.Service, pageService *page.Service,
 		r.Get("/auth/{platform}/callback", authService.CallBack)
 		r.Get("/auth/{platform}/login", authService.Login)
 		r.Get("/auth/{platform}/logout", authService.Logout)
+		r.Get("/auth/{platform}/delete", authService.DeleteAccount)
 	})
 
 	// private

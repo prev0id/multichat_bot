@@ -4,10 +4,13 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/dghubble/sessions"
-
-	"multichat_bot/internal/common/cookie"
+	"multichat_bot/internal/domain"
 )
+
+var providers = map[domain.Platform]string{
+	domain.Twitch:  "Twitch",
+	domain.YouTube: "Google",
+}
 
 type accountTemplateData struct {
 	Platforms []platformData
@@ -16,10 +19,8 @@ type accountTemplateData struct {
 type platformData struct {
 	PlatformName string
 	ProviderName string
+	ChannelID    string
 	Username     string
-	Email        string
-	ID           string
-	Token        string
 	IsLoggedIn   bool
 }
 
@@ -38,35 +39,28 @@ func (s *Service) HandleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) getRootData(r *http.Request) *accountTemplateData {
-	twitchSession, err := s.cookieStore.Get(r, cookie.TwitchSession)
-
-	twitchData := platformData{IsLoggedIn: false}
-	if err == nil {
-		twitchData = getDataFromSession(twitchSession)
+	data := &accountTemplateData{
+		Platforms: make([]platformData, 0, len(domain.Platforms)),
 	}
-	twitchData.ProviderName = "Twitch"
-	twitchData.PlatformName = "twitch"
 
-	googleSession, err := s.cookieStore.Get(r, cookie.GoogleSession)
+	for platform, provider := range providers {
+		info, ok := s.cookieStore.GetPlatformInfo(r, platform)
+		if !ok {
+			data.Platforms = append(data.Platforms, platformData{
+				PlatformName: platform.String(),
+				ProviderName: provider,
+			})
+			continue
+		}
 
-	googleData := platformData{IsLoggedIn: false}
-	if err == nil {
-		googleData = getDataFromSession(googleSession)
+		data.Platforms = append(data.Platforms, platformData{
+			PlatformName: platform.String(),
+			ChannelID:    info.ChannelID,
+			Username:     info.Username,
+			IsLoggedIn:   true,
+		})
+
 	}
-	googleData.ProviderName = "Google"
-	googleData.PlatformName = "youtube"
 
-	return &accountTemplateData{
-		Platforms: []platformData{googleData, twitchData},
-	}
-}
-
-func getDataFromSession(session *sessions.Session[string]) platformData {
-	return platformData{
-		Username:   session.Get(cookie.UsernameKey),
-		Email:      session.Get(cookie.EmailKey),
-		ID:         session.Get(cookie.IDKey),
-		Token:      session.Get(cookie.AccessTokenKey),
-		IsLoggedIn: true,
-	}
+	return data
 }

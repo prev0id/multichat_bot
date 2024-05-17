@@ -61,14 +61,18 @@ func (s *Service) broadcast(msg *domain.Message) {
 		return
 	}
 
-	for platform, channel := range user.Platforms {
+	for platform, config := range user.Platforms {
 		service, ok := s.platforms[platform]
 		if !ok {
 			slog.Warn("messageManager::broadcast unable to find platform", slog.String(logger.Platform, string(platform)))
 			continue
 		}
 
-		if err := service.SendMessage(msg, channel); err != nil {
+		if err := msg.Validate(config); err != nil {
+			slog.Warn("messageManager::broadcast skip message:", slog.String(logger.Error, err.Error()))
+		}
+
+		if err := service.SendMessage(msg, config.Channel); err != nil {
 			slog.Error("messageManager::broadcast error occurred while sending the message",
 				slog.String(logger.Error, err.Error()),
 				slog.Any(logger.User, user),

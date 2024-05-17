@@ -1,4 +1,4 @@
-package twitch
+package google
 
 import (
 	"context"
@@ -7,10 +7,10 @@ import (
 	"multichat_bot/internal/common/cookie"
 )
 
-type userKeyType struct{}
+type googleUserKeyType struct{}
 
 var (
-	userKey = userKeyType{}
+	userKey = googleUserKeyType{}
 )
 
 func withPlatformInfo(ctx context.Context, info cookie.PlatformInfo) context.Context {
@@ -20,7 +20,7 @@ func withPlatformInfo(ctx context.Context, info cookie.PlatformInfo) context.Con
 func PlatformInfoFromContext(ctx context.Context) (cookie.PlatformInfo, error) {
 	val, ok := ctx.Value(userKey).(cookie.PlatformInfo)
 	if !ok {
-		return cookie.PlatformInfo{}, errors.New("twitch: Context missing Twitch User")
+		return cookie.PlatformInfo{}, errors.New("google: Context missing Google User")
 	}
 
 	return val, nil

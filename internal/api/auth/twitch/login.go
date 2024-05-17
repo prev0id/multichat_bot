@@ -57,14 +57,16 @@ func twitchHandler(config *oauth2.Config, success, failure http.Handler) http.Ha
 			return
 		}
 
-		user, err := getUserInfo(resp.Body)
+		info, err := getPlatformInfo(resp.Body)
 		if err != nil {
 			ctx = gologin.WithError(ctx, err)
 			failure.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
 
-		success.ServeHTTP(w, r.WithContext(withUser(ctx, user)))
+		converted := convertToCookie(info, token)
+
+		success.ServeHTTP(w, r.WithContext(withPlatformInfo(ctx, converted)))
 	}
 
 	return http.HandlerFunc(fn)

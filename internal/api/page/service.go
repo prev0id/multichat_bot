@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"multichat_bot/internal/common/cookie"
+	"multichat_bot/internal/database"
 )
 
 const (
@@ -18,13 +19,15 @@ const (
 type Service struct {
 	templates   map[string]*template.Template
 	cookieStore *cookie.Store
+	db          *database.Manager
 	isProd      bool
 }
 
-func NewService(isProd bool, cookieStore *cookie.Store) (*Service, error) {
+func NewService(isProd bool, cookieStore *cookie.Store, db *database.Manager) (*Service, error) {
 	s := &Service{
 		isProd:      isProd,
 		cookieStore: cookieStore,
+		db:          db,
 	}
 
 	if !s.isProd {

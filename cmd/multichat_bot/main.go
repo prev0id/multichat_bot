@@ -68,14 +68,14 @@ func main() {
 
 	cookieStore := cookie.NewStore(cfg.Cookie)
 
-	pageService, err := page.NewService(cfg.Auth.IsProd, cookieStore)
+	pageService, err := page.NewService(cfg.Auth.IsProd, cookieStore, db)
 	if err != nil {
 		log.Fatalf("error creating page service: %v", err)
 	}
-	userService := user.NewService(db).
+	userService := user.NewService(db, cookieStore).
 		WithPlatformService(domain.Twitch, twitchService).
 		WithPlatformService(domain.YouTube, ytService)
-	authService := auth.NewService(cfg.Auth, cookieStore)
+	authService := auth.NewService(cfg.Auth, cookieStore, db)
 
 	if err := api.Serve(cfg.API, userService, pageService, authService); err != nil {
 		log.Fatalf("error starting api: %v", err)
