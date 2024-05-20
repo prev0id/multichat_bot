@@ -2,7 +2,9 @@ package adapter
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"log/slog"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3" // поддержка sqlite3 для goqu
@@ -14,11 +16,10 @@ import (
 const (
 	dialect = "sqlite"
 
-	tableUser = "user"
-	columnID  = "id"
-
+	tableUser     = "user"
 	tablePlatform = "platform"
 
+	columnID            = "id"
 	columnUserID        = "user_id"
 	columnName          = "name"
 	columnChannel       = "channel"
@@ -35,7 +36,8 @@ type DB struct {
 }
 
 type userRow struct {
-	id int64
+	token string
+	id    int64
 }
 
 type platformRow struct {
@@ -80,22 +82,24 @@ func (db *DB) ListUsers() ([]*domain.User, error) {
 		}
 
 		result = append(result, &domain.User{
-			ID:        user.id,
-			Platforms: configs,
+			ID:          user.id,
+			AccessToken: user.token,
+			Platforms:   configs,
 		})
 	}
 
 	return result, nil
 }
 
-func (db *DB) NewUser() (int64, error) {
+func (db *DB) NewUser(token string) (int64, error) {
 	query, _, err := goqu.Dialect(dialect).
 		Insert(tableUser).
-		Cols(columnID).
+		Cols(columnID, columnAccessToken).
 		FromQuery(
 			goqu.From(tableUser).
 				Select(
-					goqu.L("ifnull(max(id), 0) + 1"),
+					goqu.L("ifnull(max(id), 0) + 1").As(columnID),
+					goqu.C(token).As(columnAccessToken),
 				),
 		).ToSQL()
 
@@ -201,9 +205,61 @@ func (db *DB) DeletePlatform(id int64, platform domain.Platform) error {
 	return nil
 }
 
+func (db *DB) UpdateBannedUsers(id int64, platform domain.Platform, bannedUsers domain.BannedList) error {
+	query, _, err := goqu.Dialect(dialect).
+		Update(tablePlatform).
+		Where(
+			goqu.And(
+				goqu.C(columnUserID).Eq(id),
+				goqu.C(columnName).Eq(platform.String()),
+			),
+		).
+		Set(
+			goqu.Record{columnDisabledUsers: convertBannedListToDB(bannedUsers)},
+		).
+		ToSQL()
+	if err != nil {
+		return fmt.Errorf("db::update_banned_users error creating query: %w", err)
+	}
+
+	slog.Info(query)
+
+	_, err = db.db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("db::update_banned_users error exequting query: %w", err)
+	}
+
+	return nil
+}
+
+func (db *DB) UpdateBannedWords(id int64, platform domain.Platform, bannedWords domain.BannedList) error {
+	query, _, err := goqu.Dialect(dialect).
+		Update(tablePlatform).
+		Where(
+			goqu.And(
+				goqu.C(columnUserID).Eq(id),
+				goqu.C(columnName).Eq(platform.String()),
+			),
+		).
+		Set(
+			goqu.Record{columnBannedWords: convertBannedListToDB(bannedWords)},
+		).
+		ToSQL()
+	if err != nil {
+		return fmt.Errorf("db::update_banned_words error creating query: %w", err)
+	}
+
+	_, err = db.db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("db::update_banned_words error exequting query: %w", err)
+	}
+
+	return nil
+}
+
 func (db *DB) listUserTable() ([]userRow, error) {
 	query, _, err := goqu.Dialect(dialect).
-		Select(columnID).
+		Select(columnID, columnAccessToken).
 		From(tableUser).
 		ToSQL()
 
@@ -221,14 +277,16 @@ func (db *DB) listUserTable() ([]userRow, error) {
 	for rows.Next() {
 		var (
 			userID int64
+			token  string
 		)
 
-		if err := rows.Scan(&userID); err != nil {
+		if err := rows.Scan(&userID, &token); err != nil {
 			return nil, fmt.Errorf("db::list_users error scanning row: %w", err)
 		}
 
 		result = append(result, userRow{
-			id: userID,
+			id:    userID,
+			token: token,
 		})
 	}
 
@@ -309,4 +367,9 @@ func (db *DB) listPlatformTable() (map[int64][]platformRow, error) {
 	}
 
 	return result, nil
+}
+
+func convertBannedListToDB(list domain.BannedList) string {
+	result, _ := json.Marshal(list)
+	return string(result)
 }

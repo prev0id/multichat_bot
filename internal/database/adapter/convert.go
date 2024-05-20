@@ -29,8 +29,8 @@ func convertPlatformToDomain(row platformRow) (*domain.PlatformConfig, error) {
 	}
 
 	var (
-		bannedUsers []string
-		bannedWords []string
+		bannedUsers domain.BannedList
+		bannedWords domain.BannedList
 	)
 
 	if err := json.Unmarshal([]byte(row.DisabledUsers), &bannedUsers); err != nil {

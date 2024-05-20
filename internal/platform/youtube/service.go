@@ -1,6 +1,9 @@
 package youtube
 
 import (
+	"fmt"
+	"log/slog"
+
 	"multichat_bot/internal/domain"
 	"multichat_bot/internal/platform/youtube/client"
 )
@@ -16,6 +19,7 @@ func NewService(adapter *client.Adapter) *Service {
 }
 
 func (s *Service) SendMessage(message *domain.Message, channelID string) error {
+	slog.Info(fmt.Sprintf("youtube: send a message to channel %s", channelID))
 	return s.client.SendMessage(message, channelID)
 }
 

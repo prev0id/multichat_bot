@@ -14,7 +14,7 @@ type Message struct {
 }
 
 func (m *Message) Validate(config *PlatformConfig) error {
-	if config.IsJoined {
+	if !config.IsJoined {
 		return fmt.Errorf("bot not joined to chat")
 	}
 

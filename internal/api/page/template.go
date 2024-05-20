@@ -5,6 +5,22 @@ import (
 	"html/template"
 )
 
+const (
+	templateNameIndex = "website/src/index.gohtml"
+
+	templateName404 = "website/src/html/404/404.gohtml"
+
+	templateNameAccount          = "website/src/html/account/account.gohtml"
+	templateNameAccountLoggedIn  = "website/src/html/account/logged_in.gohtml"
+	templateNameAccountLoggedOut = "website/src/html/account/logged_out.gohtml"
+	templateNameAccountLogos     = "website/src/html/account/logos.gohtml"
+
+	templateNameSettings      = "website/src/html/settings/settings.gohtml"
+	templateNameSettingsJoin  = "website/src/html/settings/toggle_join.gohtml"
+	templateNameSettingsUsers = "website/src/html/settings/banned_users.gohtml"
+	templateNameSettingsWords = "website/src/html/settings/banned_words.gohtml"
+)
+
 var (
 	templateNameToParser = map[string]func() (*template.Template, error){
 		templateName404:      parse404,
@@ -46,15 +62,30 @@ func (s *Service) getTemplate(name string) (*template.Template, error) {
 }
 
 func parseAccount() (*template.Template, error) {
-	templateAccount, err := template.ParseFiles(templateNameIndex, templateNameAccount)
+	templateAccount, err := template.ParseFiles(
+		templateNameIndex,
+		templateNameAccount,
+		templateNameAccountLoggedIn,
+		templateNameAccountLoggedOut,
+		templateNameAccountLogos,
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing account template: %w", err)
 	}
+
 	return templateAccount, nil
 }
 
 func parseSettings() (*template.Template, error) {
-	templateSettings, err := template.ParseFiles(templateNameIndex, templateNameSettings)
+	templateSettings, err := template.ParseFiles(
+		templateNameIndex,
+		templateNameSettings,
+		templateNameSettingsJoin,
+		templateNameSettingsUsers,
+		templateNameSettingsWords,
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing settings template: %w", err)
 	}

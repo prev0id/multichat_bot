@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/jwtauth"
 
 	"multichat_bot/internal/api/auth"
 	"multichat_bot/internal/api/page"
@@ -16,8 +15,6 @@ import (
 )
 
 func Serve(cfg config.API, userService *user.Service, pageService *page.Service, authService *auth.Service) error {
-	jwtAuth := jwtauth.New(cfg.Algorithm, cfg.Secret, nil)
-
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
@@ -41,19 +38,23 @@ func Serve(cfg config.API, userService *user.Service, pageService *page.Service,
 
 	// auth
 	router.Group(func(r chi.Router) {
+		r.Post("/auth/logout", authService.Logout)
 		r.Get("/auth/{platform}/callback", authService.CallBack)
 		r.Get("/auth/{platform}/login", authService.Login)
-		r.Get("/auth/{platform}/logout", authService.Logout)
-		r.Get("/auth/{platform}/delete", authService.DeleteAccount)
+		r.Get("/auth/{platform}/delete", authService.DeletePlatform)
 	})
 
 	// private
 	router.Group(func(r chi.Router) {
-		r.Use(jwtauth.Verifier(jwtAuth))
-		r.Use(jwtauth.Authenticator)
-
 		r.Post("/user/{platform}/join", userService.HandleJoin)
 		r.Post("/user/{platform}/leave", userService.HandleLeave)
+
+		r.Post("/user/{platform}/ban/add/word", userService.HandleAddBanWord)
+		r.Post("/user/{platform}/ban/remove/word/{word}", userService.HandleRemoveBanWord)
+
+		r.Post("/user/{platform}/ban/add/user", userService.HandleAddBanUser)
+		r.Post("/user/{platform}/ban/remove/user/{user}", userService.HandleRemoveBanUser)
+
 	})
 
 	server := &http.Server{

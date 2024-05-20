@@ -2,5 +2,6 @@ package domain
 
 const (
 	URLParamPlatform = "platform"
-	ClaimUserUUID    = "user-uuid"
+	URLParamWord     = "word"
+	URLParamUser     = "user"
 )

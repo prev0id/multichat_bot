@@ -7,16 +7,31 @@ import (
 	"multichat_bot/internal/domain"
 )
 
-var providers = map[domain.Platform]string{
-	domain.Twitch:  "Twitch",
-	domain.YouTube: "Google",
-}
+var (
+	providers = map[domain.Platform]string{
+		domain.Twitch:  "Twitch",
+		domain.YouTube: "Google",
+	}
+
+	loggedOutUserData = &accountTemplateData{
+		Platforms: []accountData{
+			{
+				PlatformName: domain.Twitch.String(),
+				ProviderName: providers[domain.Twitch],
+			},
+			{
+				PlatformName: domain.YouTube.String(),
+				ProviderName: providers[domain.YouTube],
+			},
+		},
+	}
+)
 
 type accountTemplateData struct {
-	Platforms []platformData
+	Platforms []accountData
 }
 
-type platformData struct {
+type accountData struct {
 	PlatformName string
 	ProviderName string
 	ChannelID    string
@@ -39,27 +54,28 @@ func (s *Service) HandleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) getRootData(r *http.Request) *accountTemplateData {
-	data := &accountTemplateData{
-		Platforms: make([]platformData, 0, len(domain.Platforms)),
+	user, ok := s.auth.IsLoggedIn(r)
+	if !ok {
+		return loggedOutUserData
 	}
 
-	for platform, provider := range providers {
-		info, ok := s.cookieStore.GetPlatformInfo(r, platform)
-		if !ok {
-			data.Platforms = append(data.Platforms, platformData{
-				PlatformName: platform.String(),
-				ProviderName: provider,
-			})
-			continue
+	data := &accountTemplateData{
+		Platforms: make([]accountData, 0, len(domain.Platforms)),
+	}
+
+	for _, platform := range domain.Platforms {
+		account := accountData{
+			PlatformName: platform.String(),
+			ProviderName: providers[platform],
 		}
 
-		data.Platforms = append(data.Platforms, platformData{
-			PlatformName: platform.String(),
-			ChannelID:    info.ChannelID,
-			Username:     info.Username,
-			IsLoggedIn:   true,
-		})
+		if cfg, ok := user.Platforms[platform]; ok {
+			account.IsLoggedIn = true
+			account.Username = cfg.Channel
+			account.ChannelID = cfg.ID
+		}
 
+		data.Platforms = append(data.Platforms, account)
 	}
 
 	return data

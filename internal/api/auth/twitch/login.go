@@ -64,7 +64,7 @@ func twitchHandler(config *oauth2.Config, success, failure http.Handler) http.Ha
 			return
 		}
 
-		converted := convertToCookie(info, token)
+		converted := convertToDomain(info, token)
 
 		success.ServeHTTP(w, r.WithContext(withPlatformInfo(ctx, converted)))
 	}

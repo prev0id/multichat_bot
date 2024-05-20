@@ -1,7 +1,9 @@
 package twitch
 
 import (
+	"fmt"
 	"log"
+	"log/slog"
 
 	"multichat_bot/internal/config"
 	"multichat_bot/internal/domain"
@@ -43,6 +45,7 @@ func (s *Service) Connect() error {
 }
 
 func (s *Service) Join(channel string) error {
+	slog.Info(fmt.Sprintf("twitch: joining channel %s", channel))
 	s.client.Join(channel)
 	return nil
 }
@@ -62,13 +65,15 @@ func (s *Service) chatMessageCallback(msg twitch.PrivateMessage) {
 		return
 	}
 
+	slog.Info(fmt.Sprintf("twitch: received a message from %s: %s", msg.User.Name, msg.Message))
+
 	s.messageChannel <- convertTwitchPrivmsgToDomain(msg)
 }
 
 func convertTwitchPrivmsgToDomain(from twitch.PrivateMessage) *domain.Message {
 	return &domain.Message{
 		From:     from.User.DisplayName,
-		Channel:  from.Channel,
+		Channel:  from.RoomID,
 		Text:     from.Message,
 		Platform: domain.Twitch,
 	}

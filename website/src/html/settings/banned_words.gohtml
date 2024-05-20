@@ -1,0 +1,66 @@
+{{- /*gotype: multichat_bot/internal/domain.TemplateSettingsData*/ -}}
+{{ block "banned-words" . }}
+    <div
+            class="p-3 border-2 border-dashed border-black rounded-xl shadow-lg flex flex-col gap-2"
+            id="ban-word-wrapper"
+    >
+        <label for="word_disabler" class="text-lg font-medium">
+            <span class="font-semibold">{{ .Name }}</span> Ban words:</label>
+        <form
+                hx-post="/user/{{ .Name }}/ban/add/word"
+                hx-trigger="submit, keyup[keyCode==13]"
+                hx-target="closest #ban-word-wrapper"
+                hx-swap="outerHTML"
+                class="flex flex-col gap-2"
+        >
+            <input
+                    id="word_disabler"
+                    type="text"
+                    name="input"
+                    placeholder="cheese"
+                    class="form-control bg-blue-100 border border-black text-sm rounded-lg w-full p-2.5"
+            />
+            <button
+                    type="submit"
+                    class="rounded-md bg-blue-400 px-2 py-1 text-base text-white shadow-lg hover:bg-red-500"
+            >
+                Submit
+            </button>
+        </form>
+        <p class="text-base">
+            write the words that you don't want the bot to forward, e.g. cheese.
+        </p>
+        <div class="flex flex-row flex-wrap gap-2">
+            {{ $name := .Name }}
+            {{ range .BannedWords }}
+                <div
+                        class="px-1.5 py-0.5 bg-blue-400 text-white rounded-md shadow-md flex flex-row justify-center items-center gap-1"
+                >
+                    <p>{{ . }}</p>
+                    <button
+                            hx-post="/user/{{ $name }}/ban/remove/word/{{ . }}"
+                            hx-trigger="click"
+                            hx-target="closest #ban-word-wrapper"
+                            hx-swap="outerHTML"
+
+                    >
+                        <svg
+                                class="h-5 w-5 text-black hover:text-red-500" width="24" height="24"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                                fill="none"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                        >
+                            <path stroke="none" d="M0 0h24v24H0z"/>
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            {{ end }}
+        </div>
+    </div>
+{{ end }}
+

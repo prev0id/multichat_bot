@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"multichat_bot/internal/common/cookie"
+	"multichat_bot/internal/domain"
 )
 
 type getUserResponseDesc struct {
@@ -40,10 +40,15 @@ func getPlatformInfo(reader io.Reader) (userInfo, error) {
 	return data.Data[0], nil
 }
 
-func convertToCookie(user userInfo, token *oauth2.Token) cookie.PlatformInfo {
-	return cookie.PlatformInfo{
-		ChannelID:   user.ID,
-		Username:    user.DisplayName,
-		AccessToken: token.AccessToken,
+func convertToDomain(user userInfo, token *oauth2.Token) *domain.PlatformConfig {
+	return &domain.PlatformConfig{
+		ExpiresIn:     token.Expiry,
+		ID:            user.ID,
+		Channel:       user.DisplayName,
+		AccessToken:   token.AccessToken,
+		RefreshToken:  token.RefreshToken,
+		DisabledUsers: nil,
+		BannedWords:   nil,
+		IsJoined:      false,
 	}
 }

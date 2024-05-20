@@ -2,17 +2,12 @@ package async_cache
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"sync"
 	"time"
 
 	"multichat_bot/internal/domain"
 	"multichat_bot/internal/domain/logger"
-)
-
-var (
-	ErrNotFound = errors.New("not found")
 )
 
 type list func() ([]*domain.User, error)
@@ -35,32 +30,32 @@ func New(list list, refresh time.Duration) *Cache {
 	}
 }
 
-func (c *Cache) GetByPlatform(platform domain.Platform, channelID string) (domain.User, error) {
+func (c *Cache) GetByPlatform(platform domain.Platform, channelID string) (domain.User, bool) {
 	c.m.RLock()
 	defer c.m.RUnlock()
 
 	list, ok := c.byPlatform[platform]
 	if !ok {
-		return domain.User{}, ErrNotFound
+		return domain.User{}, false
 	}
 
 	user, ok := list[channelID]
 	if !ok {
-		return domain.User{}, ErrNotFound
+		return domain.User{}, false
 	}
 
-	return *user, nil
+	return *user, true
 }
-func (c *Cache) GetByID(id int64) (domain.User, error) {
+func (c *Cache) GetByID(id int64) (domain.User, bool) {
 	c.m.RLock()
 	defer c.m.RUnlock()
 
 	user, ok := c.users[id]
 	if !ok {
-		return domain.User{}, ErrNotFound
+		return domain.User{}, false
 	}
 
-	return *user, nil
+	return *user, true
 }
 func (c *Cache) StartSyncing(ctx context.Context) error {
 	slog.Info("async_cache::sync start syncing")

@@ -1,37 +1,13 @@
-<div
-        class="h-full border-2 border-dashed border-black rounded-xl flex justify-center items-center shadow-lg"
->
-    <div class="flex flex-col items-center m-0 justify-center gap-1 pb-8 px-4">
-        <svg
-                class="w-28 fill-blue-300"
-                fill="#000000"
-                viewBox="-6.5 0 32 32"
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-                stroke="#000000"
-                stroke-width="0.64"
+{{- /*gotype: multichat_bot/internal/api/page.accountData*/ -}}
+
+{{ define "logged-out" }}
+    <div class="text-md sm:text-lg flex flex-col items-center">
+        <p>To use the bot in your {{ .PlatformName }} chat</p>
+        <a
+                href="/auth/{{ .PlatformName }}/login"
+                class="rounded-md mt-4 bg-blue-400 px-2 py-1 text-md font-semibold text-white shadow-lg hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-            <g
-                    id="SVGRepo_tracerCarrier"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
-                <title>google</title>
-                <path
-                        d="M9.6 25.6c-5.28 0-9.6-4.32-9.6-9.6s4.32-9.6 9.6-9.6c2.56 0 4.96 1 6.8 2.8 0.32 0.32 0.32 0.88 0 1.2s-0.88 0.32-1.2 0c-1.48-1.48-3.48-2.32-5.6-2.32-4.36 0-7.92 3.56-7.92 7.92s3.56 7.92 7.92 7.92c4.080 0 7.44-3.080 7.88-7.040h-7.88c-0.48 0-0.84-0.36-0.84-0.84s0.36-0.84 0.84-0.84h8.76c0.48 0 0.84 0.36 0.84 0.84 0 5.24-4.32 9.56-9.6 9.56z"
-                ></path>
-            </g>
-        </svg>
-        <div class="text-md sm:text-lg flex flex-col items-center">
-            <p>To use the bot in your chat</p>
-            <a
-                    href="/auth/google"
-                    class="font-medium hover:text-blue-400 underline underline-offset-2 decoration-2"
-            >
-                Log in via Google.
-            </a>
-        </div>
+            Log In via {{ .ProviderName }}
+        </a>
     </div>
-</div>
+{{ end }}

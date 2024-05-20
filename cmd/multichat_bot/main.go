@@ -11,6 +11,7 @@ import (
 	"multichat_bot/internal/api/page"
 	"multichat_bot/internal/api/user"
 	"multichat_bot/internal/app/message_broadcaster"
+	auth_service "multichat_bot/internal/common/auth"
 	"multichat_bot/internal/common/cookie"
 	"multichat_bot/internal/config"
 	"multichat_bot/internal/database"
@@ -67,17 +68,18 @@ func main() {
 	slog.Info("started twitch")
 
 	cookieStore := cookie.NewStore(cfg.Cookie)
+	authService := auth_service.NewAuthService(db, cookieStore)
 
-	pageService, err := page.NewService(cfg.Auth.IsProd, cookieStore, db)
+	pageService, err := page.NewService(cfg.Auth.IsProd, authService)
 	if err != nil {
 		log.Fatalf("error creating page service: %v", err)
 	}
-	userService := user.NewService(db, cookieStore).
+	userAPI := user.NewService(db, authService).
 		WithPlatformService(domain.Twitch, twitchService).
 		WithPlatformService(domain.YouTube, ytService)
-	authService := auth.NewService(cfg.Auth, cookieStore, db)
+	authAPI := auth.NewService(cfg.Auth, db, authService)
 
-	if err := api.Serve(cfg.API, userService, pageService, authService); err != nil {
+	if err := api.Serve(cfg.API, userAPI, pageService, authAPI); err != nil {
 		log.Fatalf("error starting api: %v", err)
 	}
 }

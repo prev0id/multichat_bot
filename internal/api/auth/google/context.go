@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"multichat_bot/internal/common/cookie"
+	"multichat_bot/internal/domain"
 )
 
 type googleUserKeyType struct{}
@@ -13,14 +13,14 @@ var (
 	userKey = googleUserKeyType{}
 )
 
-func withPlatformInfo(ctx context.Context, info cookie.PlatformInfo) context.Context {
+func withPlatformInfo(ctx context.Context, info *domain.PlatformConfig) context.Context {
 	return context.WithValue(ctx, userKey, info)
 }
 
-func PlatformInfoFromContext(ctx context.Context) (cookie.PlatformInfo, error) {
-	val, ok := ctx.Value(userKey).(cookie.PlatformInfo)
+func PlatformInfoFromContext(ctx context.Context) (*domain.PlatformConfig, error) {
+	val, ok := ctx.Value(userKey).(*domain.PlatformConfig)
 	if !ok {
-		return cookie.PlatformInfo{}, errors.New("google: Context missing Google User")
+		return nil, errors.New("google: Context missing Google User")
 	}
 
 	return val, nil

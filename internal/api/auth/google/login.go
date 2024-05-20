@@ -10,7 +10,7 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 
-	"multichat_bot/internal/common/cookie"
+	"multichat_bot/internal/domain"
 )
 
 func StateHandler(config gologin.CookieConfig, success http.Handler) http.Handler {
@@ -59,16 +59,21 @@ func googleHandler(config *oauth2.Config, success, failure http.Handler) http.Ha
 			return
 		}
 
-		ctx = withPlatformInfo(ctx, convertToPlatformInfo(resp.Items[0], token))
+		ctx = withPlatformInfo(ctx, convertToDomain(resp.Items[0], token))
 		success.ServeHTTP(w, req.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)
 }
 
-func convertToPlatformInfo(channel *youtube.Channel, token *oauth2.Token) cookie.PlatformInfo {
-	return cookie.PlatformInfo{
-		ChannelID:   channel.Id,
-		Username:    channel.Snippet.Title,
-		AccessToken: token.AccessToken,
+func convertToDomain(channel *youtube.Channel, token *oauth2.Token) *domain.PlatformConfig {
+	return &domain.PlatformConfig{
+		ExpiresIn:     token.Expiry,
+		ID:            channel.Id,
+		Channel:       channel.Snippet.Title,
+		AccessToken:   token.AccessToken,
+		RefreshToken:  token.RefreshToken,
+		DisabledUsers: nil,
+		BannedWords:   nil,
+		IsJoined:      false,
 	}
 }

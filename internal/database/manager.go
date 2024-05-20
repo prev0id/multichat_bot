@@ -35,43 +35,28 @@ func New(ctx context.Context, cfg config.DB) (*Manager, error) {
 	}, nil
 }
 
-func (m *Manager) GetUserByChannel(platform domain.Platform, channel string) (domain.User, error) {
-	user, err := m.cache.GetByPlatform(platform, channel)
-	if err != nil {
-		return user, fmt.Errorf("db_manager::get_by_platform get failed: %w", err)
+func (m *Manager) GetUserByChannel(platform domain.Platform, channel string) (domain.User, bool) {
+	user, ok := m.cache.GetByPlatform(platform, channel)
+	if !ok {
+		return domain.User{}, false
 	}
 
-	return user, nil
+	return user, true
 }
 
-func (m *Manager) GetUserByID(id int64) (domain.User, error) {
-	user, err := m.cache.GetByID(id)
+func (m *Manager) GetUserByAccessToken(accessToken string) (domain.User, error) {
+	users, err := m.db.ListUsers()
 	if err != nil {
-		return user, fmt.Errorf("db_manager::get_by_id get failed: %w", err)
-	}
-
-	return user, nil
-}
-
-func (m *Manager) GetUserByChannelOrCreateNew(platform domain.Platform, channel string) (domain.User, error) {
-	user, err := m.GetUserByChannel(platform, channel)
-	if err == nil {
-		return user, nil
-	}
-
-	if !errors.Is(err, async_cache.ErrNotFound) {
 		return domain.User{}, err
 	}
 
-	id, err := m.db.NewUser()
-	if err != nil {
-		return domain.User{}, fmt.Errorf("db_manager::new_user create failed: %w", err)
+	for _, user := range users {
+		if user.AccessToken == accessToken {
+			return *user, nil
+		}
 	}
 
-	return domain.User{
-		ID:        id,
-		Platforms: make(map[domain.Platform]*domain.PlatformConfig),
-	}, nil
+	return domain.User{}, errors.New("user not found")
 }
 
 func (m *Manager) DeleteUserPlatform(id int64, platform domain.Platform) error {
@@ -86,16 +71,13 @@ func (m *Manager) LeaveChannel(id int64, platform domain.Platform) error {
 	return m.db.ChangeJoined(id, platform, false)
 }
 
-func (m *Manager) NewUser() (domain.User, error) {
-	id, err := m.db.NewUser()
+func (m *Manager) NewUser(token string) (int64, error) {
+	id, err := m.db.NewUser(token)
 	if err != nil {
-		return domain.User{}, fmt.Errorf("db_manager::new_user create failed: %w", err)
+		return 0, fmt.Errorf("db_manager::new_user create failed: %w", err)
 	}
 
-	return domain.User{
-		Platforms: make(map[domain.Platform]*domain.PlatformConfig),
-		ID:        id,
-	}, nil
+	return id, nil
 }
 
 func (m *Manager) UpdatePlatform(id int64, platform domain.Platform, platformConfig *domain.PlatformConfig) error {
@@ -104,4 +86,12 @@ func (m *Manager) UpdatePlatform(id int64, platform domain.Platform, platformCon
 	}
 
 	return nil
+}
+
+func (m *Manager) UpdateBannedUsers(id int64, platform domain.Platform, bannedUsers domain.BannedList) error {
+	return m.db.UpdateBannedUsers(id, platform, bannedUsers)
+}
+
+func (m *Manager) UpdateBannedWords(id int64, platform domain.Platform, bannedWords domain.BannedList) error {
+	return m.db.UpdateBannedWords(id, platform, bannedWords)
 }

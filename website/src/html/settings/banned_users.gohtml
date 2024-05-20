@@ -1,0 +1,67 @@
+{{- /*gotype: multichat_bot/internal/domain.TemplateSettingsData*/ -}}
+{{ block "banned-users" . }}
+    <div
+            class="p-3 border-2 border-dashed border-black rounded-xl shadow-lg flex flex-col gap-2"
+            id="ban-user-wrapper"
+    >
+        <label for="sender_disabler" class="text-lg font-medium">
+            <span class="font-semibold">{{ .Name }}</span> Disable forwarding from:</label>
+        <form
+                hx-post="/user/{{ .Name }}/ban/add/user"
+                hx-trigger="submit, keyup[keyCode==13]"
+                hx-target="closest #ban-user-wrapper"
+                hx-swap="outerHTML"
+                class="flex flex-col gap-2"
+        >
+            <input
+                    id="sender_disabler"
+                    type="text"
+                    name="input"
+                    placeholder="nightbot"
+                    class="form-control bg-blue-100 border border-black text-sm rounded-lg w-full p-2.5"
+            />
+            <button
+                    type="submit"
+                    class="rounded-md bg-blue-400 px-2 py-1 text-base text-white shadow-lg hover:bg-red-500"
+            >
+                Submit
+            </button>
+        </form>
+        <p class="text-base">
+            write a channel of user to disable messages from them, e.g. nightbot.
+        </p>
+        <div class="flex flex-row flex-wrap gap-2">
+            {{ $name := .Name }}
+            {{ range .DisabledUsers }}
+                <div
+                        class="px-1.5 py-0.5 bg-blue-400 text-white rounded-md shadow-md flex flex-row justify-center items-center gap-1"
+                >
+                    <p>{{ . }}</p>
+                    <button
+                            hx-post="/user/{{ $name }}/ban/remove/user/{{ . }}"
+                            hx-trigger="click"
+                            hx-target="closest #ban-user-wrapper"
+                            hx-swap="outerHTML"
+
+                    >
+                        <svg
+                                class="h-5 w-5 text-black hover:text-red-500" width="24" height="24"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                                fill="none"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                        >
+                            <path stroke="none" d="M0 0h24v24H0z"/>
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            {{ end }}
+        </div>
+    </div>
+
+{{ end }}
+

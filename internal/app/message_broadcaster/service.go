@@ -9,7 +9,7 @@ import (
 )
 
 type db interface {
-	GetUserByChannel(platform domain.Platform, channel string) (domain.User, error)
+	GetUserByChannel(platform domain.Platform, channel string) (domain.User, bool)
 }
 
 type platformService interface {
@@ -25,6 +25,7 @@ type Service struct {
 func New(db db) *Service {
 	return &Service{
 		db:        db,
+		messageCh: make(chan *domain.Message),
 		platforms: make(map[domain.Platform]platformService),
 	}
 }
@@ -37,12 +38,14 @@ func (s *Service) StartWorker(ctx context.Context) {
 	slog.Info("messageManager::worker start listening")
 
 	go func() {
-		select {
-		case <-ctx.Done():
-			slog.Error("messageManager::worker end of listening", slog.String(logger.Error, ctx.Err().Error()))
-			return
-		case msg := <-s.messageCh:
-			s.broadcast(msg)
+		for {
+			select {
+			case <-ctx.Done():
+				slog.Error("messageManager::worker end of listening", slog.String(logger.Error, ctx.Err().Error()))
+				return
+			case msg := <-s.messageCh:
+				s.broadcast(msg)
+			}
 		}
 	}()
 }
@@ -52,12 +55,9 @@ func (s *Service) GetMessageChannel() chan<- *domain.Message {
 }
 
 func (s *Service) broadcast(msg *domain.Message) {
-	user, err := s.db.GetUserByChannel(msg.Platform, msg.Channel)
-	if err != nil {
-		slog.Error(
-			"messageManager::broadcast unable to get user from db",
-			slog.String(logger.Error, err.Error()),
-		)
+	user, ok := s.db.GetUserByChannel(msg.Platform, msg.Channel)
+	if !ok {
+		slog.Error("messageManager::broadcast unable to get user from db")
 		return
 	}
 
@@ -70,6 +70,7 @@ func (s *Service) broadcast(msg *domain.Message) {
 
 		if err := msg.Validate(config); err != nil {
 			slog.Warn("messageManager::broadcast skip message:", slog.String(logger.Error, err.Error()))
+			continue
 		}
 
 		if err := service.SendMessage(msg, config.Channel); err != nil {

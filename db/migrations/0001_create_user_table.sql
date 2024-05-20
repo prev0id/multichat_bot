@@ -1,6 +1,7 @@
 create table if not exists user
 (
-    id integer primary key not null
+    id           integer primary key not null,
+    access_token text                not null
 );
 
 create table if not exists platform

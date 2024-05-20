@@ -1,0 +1,27 @@
+{{- /*gotype: multichat_bot/internal/domain.TemplateSettingsData*/ -}}
+{{ block "toggle-join" . }}
+    <div id="toggle-join-wrapper"
+            class="p-3 border-2 border-dashed border-black rounded-xl shadow-lg flex flex-col justify-center items-center">
+        <p>
+            Bot is
+            {{if not .IsJoined }}
+                <span class="font-semibold">not </span>
+            {{ end -}}
+            joined to the <span class="font-semibold">{{ .Name }}</span> chat.
+        </p>
+        <button
+                hx-trigger="click"
+                hx-post="/user/{{ .Name }}/{{ if .IsJoined  }}leave{{ else }}join{{ end -}}"
+                hx-target="closest #toggle-join-wrapper"
+                hx-swap="outerHTML"
+                class="rounded-md bg-blue-400 px-2 py-1 text-base text-white shadow-lg hover:bg-red-500"
+        >
+            {{ if .IsJoined  }}Leave{{ else }}Join{{ end }} Chat
+        </button>
+        {{ with .Error }}
+            <p class="font-semibold text-red-500 py-1">
+                {{ . }}
+            </p>
+        {{ end }}
+    </div>
+{{ end }}
