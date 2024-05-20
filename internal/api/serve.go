@@ -1,7 +1,6 @@
 package api
 
 import (
-	"net"
 	"net/http"
 	"time"
 
@@ -58,7 +57,7 @@ func Serve(cfg config.API, userService *user.Service, pageService *page.Service,
 	})
 
 	server := &http.Server{
-		Addr:              net.JoinHostPort(cfg.Host, cfg.Port),
+		Addr:              cfg.Port,
 		Handler:           router,
 		ReadHeaderTimeout: 3 * time.Second,
 	}

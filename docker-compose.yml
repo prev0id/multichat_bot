@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 services:
   server:
     build:
@@ -6,16 +6,16 @@ services:
       context: .
     volumes:
       - type: bind
-        source: ${PWD}/db/data.sqlite
-        target: /app/db/data.sqlite
+        source: "${PWD}/db/data.sqlite"
+        target: "/app/db/data.sqlite"
       - type: bind
-        source: ${PWD}/configs/prod.json
-        target: /app/configs/prod.json
+        source: "${PWD}/configs/prod.json"
+        target: "/app/configs/prod.json"
       - type: bind
-        source: ${PWD}/website/src
-        target: /app/website/src
+        source: "${PWD}/website/src"
+        target: "/app/website/src"
     ports:
-      - "7000:7000"
+      - ":7000"
 
   caddy:
     image: caddy:2.7-alpine
@@ -25,4 +25,4 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
-      - $PWD/Caddyfile:/etc/caddy/Caddyfile
+      - "$PWD/Caddyfile:/etc/caddy/Caddyfile"

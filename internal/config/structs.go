@@ -19,7 +19,6 @@ type Youtube struct {
 }
 
 type API struct {
-	Host      string `json:"host"`
 	Port      string `json:"port"`
 	Algorithm string `json:"algorithm"`
 	Secret    string `json:"secret"`
