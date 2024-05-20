@@ -14,7 +14,7 @@ type settingsTemplateData struct {
 func (s *Service) HandleSetting(w http.ResponseWriter, r *http.Request) {
 	user, ok := s.auth.IsLoggedIn(r)
 	if !ok || len(user.Platforms) < len(domain.Platforms) {
-		http.Redirect(w, r, "/", http.StatusNotFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
