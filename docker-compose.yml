@@ -1,3 +1,4 @@
+version: "3"
 services:
   server:
     build:
@@ -6,7 +7,16 @@ services:
     volumes:
       - type: bind
         source: ${PWD}/db/data.sqlite
-        target: /app/database.db
+        target: /app/db/data.sqlite
+      - type: bind
+        source: ${PWD}/configs/prod.json
+        target: /app/configs/prod.json
+      - type: bind
+        source: ${PWD}/website/src
+        target: /app/website/src
+    ports:
+      - "7000:7000"
+
   caddy:
     image: caddy:2.7-alpine
     restart: unless-stopped

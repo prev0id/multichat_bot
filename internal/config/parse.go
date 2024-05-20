@@ -6,12 +6,8 @@ import (
 	"path/filepath"
 )
 
-const (
-	configPath = "./configs"
-)
-
 func Parse(path string) (*Config, error) {
-	bytes, err := os.ReadFile(filepath.Join(configPath, filepath.Clean(path)))
+	bytes, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, err
 	}

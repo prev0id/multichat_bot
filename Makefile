@@ -5,7 +5,7 @@ BIN_PATH ?= ./bin
 run: .install_air
 	air --build.cmd "go build -o=$(BIN_PATH) ./cmd/multichat_bot" \
  		--build.bin "./$(BIN_PATH)/multichat_bot" \
- 		--build.args_bin "-config='local.json'" \
+ 		--build.args_bin "-config='./configs/local.json'" \
  		--build.exclude_dir "website,bin,db" \
  		--build.include_file "./configs/local.json"
 
