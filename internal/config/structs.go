@@ -19,9 +19,8 @@ type Youtube struct {
 }
 
 type API struct {
-	Port      string `json:"port"`
-	Algorithm string `json:"algorithm"`
-	Secret    string `json:"secret"`
+	Port   string `json:"port"`
+	Secret string `json:"secret"`
 }
 
 type DB struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/dghubble/gologin/v2"
 	"github.com/go-chi/chi/v5"
@@ -51,6 +52,11 @@ func (s *Service) CallBack(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotImplemented)
 		return
 	}
+
+	ctx, cancel := context.WithDeadline(r.Context(), time.Now().Add(time.Minute))
+	defer cancel()
+
+	r = r.WithContext(ctx)
 
 	callback.ServeHTTP(w, r)
 }

@@ -19,7 +19,7 @@ func Serve(cfg config.API, userService *user.Service, pageService *page.Service,
 	router.Use(middleware.Logger)
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Recoverer)
-	router.Use(middleware.Timeout(3 * time.Second))
+	router.Use(middleware.Timeout(30 * time.Second))
 	router.Use(middleware.Heartbeat("/ping"))
 
 	router.NotFound(pageService.Handle404)
