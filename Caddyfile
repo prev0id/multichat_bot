@@ -1,4 +1,8 @@
-multichatbot.ru {
+{
+	email deevsemen@gmail.com
+}
+
+www.multichatbot.ru {
 	handle {
 		reverse_proxy server:7000
 	}
@@ -12,6 +16,8 @@ localhost {
 	handle {
 		reverse_proxy server:7000
 	}
+
+	tls internal
 
 	log {
 		format json
