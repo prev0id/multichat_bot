@@ -68,6 +68,10 @@ func (s *Service) broadcast(msg *domain.Message) {
 			continue
 		}
 
+		if msg.Platform == platform {
+			continue
+		}
+
 		if err := msg.Validate(config); err != nil {
 			slog.Warn("messageManager::broadcast skip message:", slog.String(logger.Error, err.Error()))
 			continue
