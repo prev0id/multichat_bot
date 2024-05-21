@@ -74,32 +74,18 @@ func (s *Service) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) Logout(w http.ResponseWriter, r *http.Request) {
-	_, ok := s.auth.IsLoggedIn(r)
-	if !ok {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
 	s.auth.HandleLogout(w)
-
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (s *Service) DeletePlatform(w http.ResponseWriter, r *http.Request) {
-	rawPlatform := chi.URLParam(r, domain.URLParamPlatform)
-	platform, ok := domain.StringToPlatform[rawPlatform]
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
+func (s *Service) Delete(w http.ResponseWriter, r *http.Request) {
 	user, ok := s.auth.IsLoggedIn(r)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	if err := s.auth.HandleDelete(w, user, platform); err != nil {
+	if err := s.auth.HandleDelete(w, user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

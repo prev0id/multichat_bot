@@ -37,10 +37,10 @@ func Serve(cfg config.API, userService *user.Service, pageService *page.Service,
 
 	// auth
 	router.Group(func(r chi.Router) {
-		r.Post("/auth/logout", authService.Logout)
+		r.Get("/auth/logout", authService.Logout)
+		r.Get("/auth/delete", authService.Delete)
 		r.Get("/auth/{platform}/callback", authService.CallBack)
 		r.Get("/auth/{platform}/login", authService.Login)
-		r.Get("/auth/{platform}/delete", authService.DeletePlatform)
 	})
 
 	// private

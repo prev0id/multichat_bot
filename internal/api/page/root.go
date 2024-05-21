@@ -28,7 +28,8 @@ var (
 )
 
 type accountTemplateData struct {
-	Platforms []accountData
+	Platforms  []accountData
+	IsLoggedIn bool
 }
 
 type accountData struct {
@@ -60,7 +61,8 @@ func (s *Service) getRootData(r *http.Request) *accountTemplateData {
 	}
 
 	data := &accountTemplateData{
-		Platforms: make([]accountData, 0, len(domain.Platforms)),
+		IsLoggedIn: true,
+		Platforms:  make([]accountData, 0, len(domain.Platforms)),
 	}
 
 	for _, platform := range domain.Platforms {

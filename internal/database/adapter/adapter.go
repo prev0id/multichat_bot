@@ -181,14 +181,11 @@ func (db *DB) ChangeJoined(id int64, platform domain.Platform, value bool) error
 	return nil
 }
 
-func (db *DB) DeletePlatform(id int64, platform domain.Platform) error {
+func (db *DB) DeleteUser(id int64) error {
 	query, _, err := goqu.Dialect(dialect).
 		Delete(tablePlatform).
 		Where(
-			goqu.And(
-				goqu.C(columnName).Eq(platform.String()),
-				goqu.C(columnUserID).Eq(id),
-			),
+			goqu.C(columnUserID).Eq(id),
 		).
 		ToSQL()
 

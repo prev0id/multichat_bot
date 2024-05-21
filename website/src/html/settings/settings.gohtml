@@ -1,27 +1,38 @@
 {{- /*gotype: multichat_bot/internal/api/page.settingsTemplateData*/ -}}
 
 {{ define "main" }}
-    <div class="grid grid-flow-row gap-4">
-        <div
-                class="grid grid-flow-row sm:grid-cols-2 gap-4"
-        >
-            {{ range .Platforms }}
-                {{ template "toggle-join" . }}
-            {{ end }}
+    {{ if .IsLoggedIn }}
+        <div class="grid grid-flow-row gap-4">
+            <div
+                    class="grid grid-flow-row sm:grid-cols-2 gap-4"
+            >
+                {{ range .Platforms }}
+                    {{ template "toggle-join" . }}
+                {{ end }}
+            </div>
+            <div
+                    class="grid grid-flow-row sm:grid-cols-2 gap-4"
+            >
+                {{ range .Platforms }}
+                    {{ template "banned-users" . }}
+                {{ end }}
+            </div>
+            <div
+                    class="grid grid-flow-row sm:grid-cols-2 gap-4"
+            >
+                {{ range .Platforms }}
+                    {{ template "banned-words" . }}
+                {{ end }}
+            </div>
         </div>
-        <div
-                class="grid grid-flow-row sm:grid-cols-2 gap-4"
-        >
-            {{ range .Platforms }}
-                {{ template "banned-users" . }}
-            {{ end }}
+    {{ else }}
+        <div class="w-full h-full border-2 border-dashed border-black rounded-xl flex flex-col justify-center items-center gap-4 shadow-lg">
+            <h1 class="text-xl sm:text-2xl">Please log in on both platforms</h1>
+            <p class="text-xl">(ー_ー)!!</p>
+            <a href="/"
+                    class="text-xl hover:text-blue-400 underline underline-offset-2 decoration-2">
+                Go to the home page
+            </a>
         </div>
-        <div
-                class="grid grid-flow-row sm:grid-cols-2 gap-4"
-        >
-            {{ range .Platforms }}
-                {{ template "banned-words" . }}
-            {{ end }}
-        </div>
-    </div>
+    {{ end }}
 {{ end }}

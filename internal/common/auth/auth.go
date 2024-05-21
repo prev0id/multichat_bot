@@ -41,14 +41,11 @@ func (a *Auth) HandleLogout(w http.ResponseWriter) {
 	a.cookie.DestroyAppSession(w)
 }
 
-func (a *Auth) HandleDelete(w http.ResponseWriter, user domain.User, platform domain.Platform) error {
-	if err := a.db.DeleteUserPlatform(user.ID, platform); err != nil {
+func (a *Auth) HandleDelete(w http.ResponseWriter, user domain.User) error {
+	if err := a.db.DeleteUser(user.ID); err != nil {
 		return err
 	}
 
-	if len(user.Platforms) <= 1 {
-		a.cookie.DestroyAppSession(w)
-	}
-
+	a.cookie.DestroyAppSession(w)
 	return nil
 }

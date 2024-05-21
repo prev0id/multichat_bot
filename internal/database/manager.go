@@ -59,8 +59,8 @@ func (m *Manager) GetUserByAccessToken(accessToken string) (domain.User, error) 
 	return domain.User{}, errors.New("user not found")
 }
 
-func (m *Manager) DeleteUserPlatform(id int64, platform domain.Platform) error {
-	return m.db.DeletePlatform(id, platform)
+func (m *Manager) DeleteUser(id int64) error {
+	return m.db.DeleteUser(id)
 }
 
 func (m *Manager) JoinChannel(id int64, platform domain.Platform) error {

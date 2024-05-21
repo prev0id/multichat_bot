@@ -1,7 +1,7 @@
 {{- /*gotype: multichat_bot/internal/domain.TemplateSettingsData*/ -}}
 {{ block "toggle-join" . }}
     <div id="toggle-join-wrapper"
-            class="p-3 border-2 border-dashed border-black rounded-xl shadow-lg flex flex-col justify-center items-center">
+            class="p-3 border-2 border-dashed border-black rounded-xl shadow-lg flex flex-col justify-center items-center gap-2 text-lg">
         <p>
             Bot is
             {{if not .IsJoined }}

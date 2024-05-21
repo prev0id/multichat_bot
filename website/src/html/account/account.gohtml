@@ -1,25 +1,43 @@
 {{- /*gotype: multichat_bot/internal/api/page.accountTemplateData*/ -}}
 
 {{ define "main" }}
-    <div class="w-full h-full grid grid-flow-row sm:grid-cols-2 gap-4">
-        {{ range .Platforms }}
-            <div
-                    class="h-full border-2 border-dashed flex justify-center items-center border-black rounded-xl shadow-lg"
-            >
-                <div class="flex flex-col items-center m-0 justify-center gap-1 pb-8 px-4">
-                    {{ if eq .PlatformName "twitch" }}
-                        {{ template "twitch-logo-svg" }}
-                    {{ else if eq .PlatformName "youtube" }}
-                        {{ template "google-logo-svg" }}
-                    {{ end }}
+    <div class="h-full w-full flex flex-col gap-4">
+        <div class="h-full w-full grid grid-flow-row sm:grid-cols-2 gap-4">
+            {{ range .Platforms }}
+                <div
+                        class="h-full border-2 border-dashed flex justify-center items-center border-black rounded-xl shadow-lg"
+                >
+                    <div class="flex flex-col items-center m-0 justify-center gap-1 pb-8 px-4">
+                        {{ if eq .PlatformName "twitch" }}
+                            {{ template "twitch-logo-svg" }}
+                        {{ else if eq .PlatformName "youtube" }}
+                            {{ template "google-logo-svg" }}
+                        {{ end }}
 
-                    {{ if .IsLoggedIn }}
-                        {{ template "logged-in" . }}
-                    {{ else }}
-                        {{ template "logged-out" . }}
-                    {{ end }}
+                        {{ if .IsLoggedIn }}
+                            {{ template "logged-in" . }}
+                        {{ else }}
+                            {{ template "logged-out" . }}
+                        {{ end }}
+                    </div>
                 </div>
-            </div>
+            {{ end }}
+        </div>
+        {{ if .IsLoggedIn }}
+        <div class="max-w-xl m-auto p-6 flex flex-row flex-wrap gap-6 justify-center items-center flex-wrap border-2 border-dashed border-black rounded-xl shadow-lg">
+                <a
+                        href="/auth/logout"
+                        class="sm:text-lg rounded-md bg-blue-400 px-4 py-2 text-md font-semibold text-white shadow-lg hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                    Log out
+                </a>
+                <a
+                        href="/auth/delete"
+                        class="sm:text-lg rounded-md bg-blue-400 px-4 py-2 text-md font-semibold text-white shadow-lg hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                    Delete account
+                </a>
+        </div>
         {{ end }}
     </div>
 {{ end }}
