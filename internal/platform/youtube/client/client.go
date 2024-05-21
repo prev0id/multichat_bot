@@ -49,6 +49,7 @@ func (c *client) listMessages(channel, pageToken string) (*youtube.LiveChatMessa
 }
 
 func (c *client) sendMessage(message *youtube.LiveChatMessage) error {
+	// youtube.NewService(context.Background(), option.WithCredentials(google))
 	_, err := c.yt.LiveChatMessages.
 		Insert([]string{partSnippet}, message).
 		Do()
@@ -61,6 +62,8 @@ func (c *client) sendMessage(message *youtube.LiveChatMessage) error {
 }
 
 func (c *client) searchLiveStreams(channelID string) (*youtube.SearchResult, error) {
+	fmt.Println(channelID, partSnippet, eventTypeLive, typeVideo)
+
 	resp, err := c.yt.Search.
 		List([]string{partSnippet}).
 		ChannelId(channelID).

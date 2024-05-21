@@ -46,7 +46,14 @@ func (s *Service) HandleJoin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := service.Join(cfg.Channel); err != nil {
+	fmt.Printf("%+v\n",cfg)
+
+	to := cfg.ID
+	if platform == domain.Twitch {
+		to = cfg.Channel
+	}
+
+	if err := service.Join(to); err != nil {
 		slog.Error(fmt.Sprintf("service.Join[%s]: failed to leave: %v", platform, err))
 
 		data := domain.NewTemplateSettingsData(platform, cfg, err)

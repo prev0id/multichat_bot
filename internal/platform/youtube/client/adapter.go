@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -40,8 +41,9 @@ func NewAdapter(ctx context.Context, cfg config.Youtube, messageChannel chan<- *
 
 	return &Adapter{
 		client:         client,
-		duration:       time.Second,
+		duration:       4 * time.Second,
 		messageChannel: messageChannel,
+		channelConfigs: make(map[string]channelConfig),
 	}, nil
 }
 
@@ -54,12 +56,12 @@ func (a *Adapter) StartListening(ctx context.Context) {
 func (a *Adapter) Join(channelID string) error {
 	searchResult, err := a.client.searchLiveStreams(channelID)
 	if err != nil {
-		return err
+		return fmt.Errorf("search live streams: %w", err)
 	}
 
 	details, err := a.client.videoDetails(searchResult.Id.VideoId)
 	if err != nil {
-		return err
+		return fmt.Errorf("get video details: %w", err)
 	}
 
 	a.m.Lock()
@@ -85,11 +87,13 @@ func (a *Adapter) SendMessage(msg *domain.Message, chatID string) error {
 
 func (a *Adapter) run(ctx context.Context) {
 	ticker := time.NewTicker(a.duration)
-	select {
-	case <-ticker.C:
-		a.listMessages()
-	case <-ctx.Done():
-		slog.Warn("[youtube] stop listening: " + ctx.Err().Error())
+	for {
+		select {
+		case <-ticker.C:
+			a.listMessages()
+		case <-ctx.Done():
+			slog.Warn("[youtube] stop listening: " + ctx.Err().Error())
+		}	
 	}
 }
 
