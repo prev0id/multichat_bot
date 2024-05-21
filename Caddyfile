@@ -1,6 +1,14 @@
-localhost, multichatbot.ru {
-	tls internal
+multichatbot.ru {
+	handle {
+		reverse_proxy server:7000
+	}
 
+	log {
+		format json
+	}
+}
+
+localhost {
 	handle {
 		reverse_proxy server:7000
 	}
