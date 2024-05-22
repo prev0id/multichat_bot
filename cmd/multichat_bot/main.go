@@ -26,7 +26,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configPath, "config", "local.json", "sets the path to the config, by default ./configs/local.json")
+	flag.StringVar(&configPath, "config", "./configs/local.json", "sets the path to the config, by default ./configs/local.json")
 }
 
 func main() {
@@ -46,7 +46,7 @@ func main() {
 
 	broadcaster := message_broadcaster.New(db)
 
-	ytClient, err := client.NewAdapter(appCtx, cfg.Youtube, broadcaster.GetMessageChannel())
+	ytClient, err := client.NewAdapter(appCtx, cfg.Youtube, cfg.Auth.Youtube, broadcaster.GetMessageChannel())
 	if err != nil {
 		log.Fatalf("error creating youtube client: %v", err)
 	}

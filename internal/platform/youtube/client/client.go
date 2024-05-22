@@ -20,50 +20,22 @@ const (
 	typeVideo = "video"
 )
 
-type client struct {
+type serverClient struct {
 	yt *youtube.Service
 }
 
-func newClient(ctx context.Context, apiKey string) (*client, error) {
+func newClient(ctx context.Context, apiKey string) (*serverClient, error) {
 	service, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
 		return nil, err
 	}
 
-	return &client{
+	return &serverClient{
 		yt: service,
 	}, nil
 }
 
-func (c *client) listMessages(channel, pageToken string) (*youtube.LiveChatMessageListResponse, error) {
-	resp, err := c.yt.LiveChatMessages.
-		List(channel, []string{partSnippet, partAuthorDetails}).
-		PageToken(pageToken).
-		Do()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func (c *client) sendMessage(message *youtube.LiveChatMessage) error {
-	// youtube.NewService(context.Background(), option.WithCredentials(google))
-	_, err := c.yt.LiveChatMessages.
-		Insert([]string{partSnippet}, message).
-		Do()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *client) searchLiveStreams(channelID string) (*youtube.SearchResult, error) {
-	fmt.Println(channelID, partSnippet, eventTypeLive, typeVideo)
-
+func (c *serverClient) searchLiveStreams(channelID string) (*youtube.SearchResult, error) {
 	resp, err := c.yt.Search.
 		List([]string{partSnippet}).
 		ChannelId(channelID).
@@ -76,13 +48,13 @@ func (c *client) searchLiveStreams(channelID string) (*youtube.SearchResult, err
 	}
 
 	if len(resp.Items) == 0 {
-		return nil, fmt.Errorf("no active live streams found")
+		return nil, fmt.Errorf("no active live streams found for channel %s", channelID)
 	}
 
 	return resp.Items[0], nil
 }
 
-func (c *client) videoDetails(videoID string) (*youtube.Video, error) {
+func (c *serverClient) videoDetails(videoID string) (*youtube.Video, error) {
 	resp, err := c.yt.Videos.
 		List([]string{
 			partSnippet,

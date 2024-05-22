@@ -18,16 +18,16 @@ func NewService(adapter *client.Adapter) *Service {
 	}
 }
 
-func (s *Service) SendMessage(message *domain.Message, channelID string) error {
-	slog.Info(fmt.Sprintf("youtube: send a message to channel %s", channelID))
-	return s.client.SendMessage(message, channelID)
+func (s *Service) SendMessage(message *domain.Message, config *domain.PlatformConfig) error {
+	slog.Info(fmt.Sprintf("youtube: send a message to channel %s", config.ID))
+	return s.client.SendMessage(message, config)
 }
 
-func (s *Service) Join(channelID string) error {
-	return s.client.Join(channelID)
+func (s *Service) Join(cfg *domain.PlatformConfig) error {
+	return s.client.Join(cfg)
 }
 
-func (s *Service) Leave(channelID string) error {
-	s.client.Leave(channelID)
+func (s *Service) Leave(cfg *domain.PlatformConfig) error {
+	s.client.Leave(cfg.ID)
 	return nil
 }

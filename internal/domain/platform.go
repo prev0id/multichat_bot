@@ -4,6 +4,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"golang.org/x/oauth2"
 )
 
 type Platform string
@@ -34,6 +36,15 @@ type PlatformConfig struct {
 	DisabledUsers BannedList
 	BannedWords   BannedList
 	IsJoined      bool
+}
+
+func (c *PlatformConfig) Token() *oauth2.Token {
+	return &oauth2.Token{
+		AccessToken:  c.AccessToken,
+		TokenType:    "Bearer",
+		RefreshToken: c.RefreshToken,
+		Expiry:       c.ExpiresIn,
+	}
 }
 
 type BannedList []string

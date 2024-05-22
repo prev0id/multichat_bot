@@ -2,6 +2,8 @@ package google
 
 import (
 	"errors"
+	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/dghubble/gologin/v2"
@@ -38,6 +40,8 @@ func googleHandler(config *oauth2.Config, success, failure http.Handler) http.Ha
 			failure.ServeHTTP(w, req.WithContext(ctx))
 			return
 		}
+
+		slog.Info(fmt.Sprintf("YouTube logged in with token: %+v", token))
 
 		youtubeService, err := youtube.NewService(ctx, option.WithHTTPClient(config.Client(ctx, token)))
 		if err != nil {

@@ -44,19 +44,19 @@ func (s *Service) Connect() error {
 	return nil
 }
 
-func (s *Service) Join(channel string) error {
-	slog.Info(fmt.Sprintf("twitch: joining channel %s", channel))
-	s.client.Join(channel)
+func (s *Service) Join(cfg *domain.PlatformConfig) error {
+	slog.Info(fmt.Sprintf("twitch: joining channel %s", cfg.Channel))
+	s.client.Join(cfg.Channel)
 	return nil
 }
 
-func (s *Service) Leave(channel string) error {
-	s.client.Depart(channel)
+func (s *Service) Leave(cfg *domain.PlatformConfig) error {
+	s.client.Depart(cfg.Channel)
 	return nil
 }
 
-func (s *Service) SendMessage(message *domain.Message, channel string) error {
-	s.client.Say(channel, message.Text)
+func (s *Service) SendMessage(message *domain.Message, cfg *domain.PlatformConfig) error {
+	s.client.Say(cfg.Channel, message.FormatedText())
 	return nil
 }
 

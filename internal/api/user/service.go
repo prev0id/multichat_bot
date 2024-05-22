@@ -9,8 +9,8 @@ import (
 )
 
 type platformService interface {
-	Join(user string) error
-	Leave(user string) error
+	Join(config *domain.PlatformConfig) error
+	Leave(config *domain.PlatformConfig) error
 }
 
 type Service struct {

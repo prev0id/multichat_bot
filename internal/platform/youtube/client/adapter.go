@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/youtube/v3"
 
@@ -21,19 +23,21 @@ const (
 )
 
 type Adapter struct {
-	client         *client
+	client         *serverClient
 	messageChannel chan<- *domain.Message
-	channelConfigs map[string]channelConfig
+	channelConfigs map[string]*channelConfig
+	oauth2Config   *oauth2.Config
 	duration       time.Duration
 	m              sync.RWMutex
 }
 
 type channelConfig struct {
+	service   *userClient
 	chatID    string
 	pageToken string
 }
 
-func NewAdapter(ctx context.Context, cfg config.Youtube, messageChannel chan<- *domain.Message) (*Adapter, error) {
+func NewAdapter(ctx context.Context, cfg config.Youtube, auth config.AuthProvider, messageChannel chan<- *domain.Message) (*Adapter, error) {
 	client, err := newClient(ctx, cfg.APIKey)
 	if err != nil {
 		return nil, err
@@ -41,9 +45,15 @@ func NewAdapter(ctx context.Context, cfg config.Youtube, messageChannel chan<- *
 
 	return &Adapter{
 		client:         client,
-		duration:       4 * time.Second,
+		duration:       5 * time.Second,
 		messageChannel: messageChannel,
-		channelConfigs: make(map[string]channelConfig),
+		channelConfigs: make(map[string]*channelConfig),
+		oauth2Config: &oauth2.Config{
+			ClientID:     auth.ClientKey,
+			ClientSecret: auth.ClientSecret,
+			Scopes:       auth.Scopes,
+			Endpoint:     google.Endpoint,
+		},
 	}, nil
 }
 
@@ -53,8 +63,10 @@ func (a *Adapter) StartListening(ctx context.Context) {
 	}()
 }
 
-func (a *Adapter) Join(channelID string) error {
-	searchResult, err := a.client.searchLiveStreams(channelID)
+func (a *Adapter) Join(cfg *domain.PlatformConfig) error {
+	slog.Info(fmt.Sprintf("YouTube joining channel %s(%s)", cfg.Channel, cfg.ID))
+
+	searchResult, err := a.client.searchLiveStreams(cfg.ID)
 	if err != nil {
 		return fmt.Errorf("search live streams: %w", err)
 	}
@@ -64,10 +76,21 @@ func (a *Adapter) Join(channelID string) error {
 		return fmt.Errorf("get video details: %w", err)
 	}
 
-	a.m.Lock()
-	a.channelConfigs[channelID] = channelConfig{
-		chatID: details.LiveStreamingDetails.ActiveLiveChatId,
+	service, err := newUserClient(a.oauth2Config, cfg.Token())
+	if err != nil {
+		return fmt.Errorf("new user client: %w", err)
 	}
+
+	chatID := details.LiveStreamingDetails.ActiveLiveChatId
+
+	slog.Info(fmt.Sprintf("YouTube joind channel %s, chatID %s", cfg.Channel, chatID))
+
+	a.m.Lock()
+	a.channelConfigs[cfg.ID] = &channelConfig{
+		chatID:  chatID,
+		service: service,
+	}
+
 	a.m.Unlock()
 
 	return nil
@@ -80,9 +103,16 @@ func (a *Adapter) Leave(channelID string) {
 	a.m.Unlock()
 }
 
-func (a *Adapter) SendMessage(msg *domain.Message, chatID string) error {
-	converted := convertDomainMessageToYoutube(msg, chatID)
-	return a.client.sendMessage(converted)
+func (a *Adapter) SendMessage(msg *domain.Message, cfg *domain.PlatformConfig) error {
+	a.m.RLock()
+	defer a.m.RUnlock()
+
+	channel, ok := a.channelConfigs[cfg.ID]
+	if !ok {
+		return errors.New("no channel config for " + cfg.ID)
+	}
+
+	return channel.service.sendMessage(convertDomainMessageToYoutube(msg, channel.chatID))
 }
 
 func (a *Adapter) run(ctx context.Context) {
@@ -93,7 +123,7 @@ func (a *Adapter) run(ctx context.Context) {
 			a.listMessages()
 		case <-ctx.Done():
 			slog.Warn("[youtube] stop listening: " + ctx.Err().Error())
-		}	
+		}
 	}
 }
 
@@ -102,11 +132,13 @@ func (a *Adapter) listMessages() {
 	defer a.m.RUnlock()
 
 	for _, channel := range a.channelConfigs {
-		resp, err := a.client.listMessages(channel.chatID, channel.pageToken)
+		resp, err := channel.service.listMessages(channel.chatID, channel.pageToken)
 		if err == nil {
 			for _, message := range resp.Items {
 				a.messageChannel <- convertYoutubeMessageToDomain(message)
 			}
+			channel.pageToken = resp.NextPageToken
+			continue
 		}
 
 		var googleErr *googleapi.Error
@@ -136,7 +168,7 @@ func convertDomainMessageToYoutube(msg *domain.Message, chatID string) *youtube.
 			LiveChatId: chatID,
 			Type:       typeTextMessageEvent,
 			TextMessageDetails: &youtube.LiveChatTextMessageDetails{
-				MessageText: msg.Text,
+				MessageText: msg.FormatedText(),
 			},
 		},
 	}

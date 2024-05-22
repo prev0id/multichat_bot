@@ -1,6 +1,8 @@
 package twitch
 
 import (
+	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/dghubble/gologin/v2"
@@ -39,6 +41,8 @@ func twitchHandler(config *oauth2.Config, success, failure http.Handler) http.Ha
 			failure.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
+
+		slog.Info(fmt.Sprintf("Twitch logged in with token: %+v", token))
 
 		req, err := http.NewRequest(http.MethodGet, userEndpoint, nil)
 		if err != nil {

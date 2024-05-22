@@ -13,6 +13,10 @@ type Message struct {
 	Platform Platform
 }
 
+func (m *Message) FormatedText() string {
+	return fmt.Sprintf("%s says: %s", m.From, m.Text)
+}
+
 func (m *Message) Validate(config *PlatformConfig) error {
 	if !config.IsJoined {
 		return fmt.Errorf("bot not joined to chat")
@@ -27,6 +31,10 @@ func (m *Message) Validate(config *PlatformConfig) error {
 		if strings.Contains(lowerCase, word) {
 			return fmt.Errorf("message is banned for a word %s", word)
 		}
+	}
+
+	if strings.Contains(m.Text, " says: ") {
+		return fmt.Errorf("message from bot %s", m.Text)
 	}
 
 	return nil

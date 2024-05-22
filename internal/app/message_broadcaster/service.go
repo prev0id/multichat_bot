@@ -13,7 +13,7 @@ type db interface {
 }
 
 type platformService interface {
-	SendMessage(message *domain.Message, channel string) error
+	SendMessage(message *domain.Message, config *domain.PlatformConfig) error
 }
 
 type Service struct {
@@ -77,7 +77,7 @@ func (s *Service) broadcast(msg *domain.Message) {
 			continue
 		}
 
-		if err := service.SendMessage(msg, config.Channel); err != nil {
+		if err := service.SendMessage(msg, config); err != nil {
 			slog.Error("messageManager::broadcast error occurred while sending the message",
 				slog.String(logger.Error, err.Error()),
 				slog.Any(logger.User, user),

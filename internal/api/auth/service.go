@@ -2,16 +2,11 @@ package auth
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
-	"fmt"
 	"net/http"
-	"net/http/httptrace"
-	"time"
 
 	"github.com/dghubble/gologin/v2"
 	"github.com/go-chi/chi/v5"
-	"golang.org/x/oauth2"
 
 	"multichat_bot/internal/api/auth/google"
 	"multichat_bot/internal/api/auth/twitch"
@@ -50,10 +45,6 @@ func NewService(cfg config.Auth, db *database.Manager, authService *auth.Auth) *
 
 func (s *Service) CallBack(w http.ResponseWriter, r *http.Request) {
 	platform := chi.URLParam(r, domain.URLParamPlatform)
-
-	if platform == "twitch" {
-		r = r.WithContext(prepareTwitchHTTP(r.Context()))
-	}
 
 	callback, ok := s.callBack[platform]
 	if !ok {
@@ -126,54 +117,4 @@ func getConfigFromContext(ctx context.Context, platform domain.Platform) (*domai
 	default:
 		return nil, errors.New("Invalid platform")
 	}
-}
-
-func prepareTwitchHTTP(ctx context.Context) context.Context {
-	client := http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-	}
-
-	ctx = context.WithValue(ctx, oauth2.HTTPClient, client)
-
-	trace := &httptrace.ClientTrace{
-		GetConn: func(hostPort string) {
-			fmt.Printf("GetConn: %s", hostPort)
-		},
-		GotConn: func(connInfo httptrace.GotConnInfo) {
-			fmt.Printf("Got Conn: %+v\n", connInfo)
-		},
-		DNSStart: func(info httptrace.DNSStartInfo) {
-			fmt.Printf("DNS Start: %+v\n", info)
-		},
-		DNSDone: func(dnsInfo httptrace.DNSDoneInfo) {
-			fmt.Printf("DNS Info: %+v\n", dnsInfo)
-		},
-		ConnectStart: func(network, addr string) {
-			fmt.Printf("Connect Start: %s %s\n", network, addr)
-		},
-		ConnectDone: func(network, addr string, err error) {
-			fmt.Printf("Connect Done: %s %s %v\n", network, addr, err)
-		},
-		TLSHandshakeStart: func() {
-			fmt.Printf("TLS Handshake Start\n")
-		},
-		TLSHandshakeDone: func(state tls.ConnectionState, err error) {
-			fmt.Printf("TLS Handshake Done: %v\n", err)
-		},
-		WroteHeaderField: func(key string, value []string) {
-			fmt.Printf("Wrote Header Field: %s %v\n", key, value)
-		},
-		WroteRequest: func(info httptrace.WroteRequestInfo) {
-			fmt.Printf("Wrote Request Info: %+v\n", info)
-		},
-	}
-	ctx = httptrace.WithClientTrace(ctx, trace)
-
-	ctx, _ = context.WithDeadline(ctx, time.Now().Add(time.Minute))
-
-	return ctx
 }
