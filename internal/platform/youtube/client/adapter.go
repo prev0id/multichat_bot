@@ -35,6 +35,7 @@ type channelConfig struct {
 	service   *userClient
 	chatID    string
 	pageToken string
+	id        string
 }
 
 func NewAdapter(ctx context.Context, cfg config.Youtube, auth config.AuthProvider, messageChannel chan<- *domain.Message) (*Adapter, error) {
@@ -89,6 +90,7 @@ func (a *Adapter) Join(cfg *domain.PlatformConfig) error {
 	a.channelConfigs[cfg.ID] = &channelConfig{
 		chatID:  chatID,
 		service: service,
+		id:      cfg.ID,
 	}
 
 	a.m.Unlock()
@@ -135,7 +137,7 @@ func (a *Adapter) listMessages() {
 		resp, err := channel.service.listMessages(channel.chatID, channel.pageToken)
 		if err == nil {
 			for _, message := range resp.Items {
-				a.messageChannel <- convertYoutubeMessageToDomain(message)
+				a.messageChannel <- convertYoutubeMessageToDomain(message, channel.id)
 			}
 			channel.pageToken = resp.NextPageToken
 			continue
@@ -153,11 +155,11 @@ func (a *Adapter) listMessages() {
 	}
 }
 
-func convertYoutubeMessageToDomain(msg *youtube.LiveChatMessage) *domain.Message {
+func convertYoutubeMessageToDomain(msg *youtube.LiveChatMessage, channelID string) *domain.Message {
 	return &domain.Message{
 		From:     msg.AuthorDetails.DisplayName,
 		Text:     msg.Snippet.TextMessageDetails.MessageText,
-		Channel:  msg.Snippet.AuthorChannelId,
+		Channel:  channelID,
 		Platform: domain.YouTube,
 	}
 }
