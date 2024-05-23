@@ -2,7 +2,6 @@ package domain
 
 import (
 	"slices"
-	"strings"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -54,8 +53,6 @@ func (w BannedList) Add(word string) BannedList {
 		return w
 	}
 
-	word = strings.TrimSpace(strings.ToLower(word))
-
 	if slices.Contains(w, word) {
 		return w
 	}
@@ -67,8 +64,6 @@ func (w BannedList) Remove(word string) BannedList {
 	if w == nil {
 		return nil
 	}
-
-	word = strings.TrimSpace(strings.ToLower(word))
 
 	idx := slices.Index(w, word)
 	if idx < 0 {

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3" // поддержка sqlite3 для goqu
@@ -218,8 +217,6 @@ func (db *DB) UpdateBannedUsers(id int64, platform domain.Platform, bannedUsers 
 	if err != nil {
 		return fmt.Errorf("db::update_banned_users error creating query: %w", err)
 	}
-
-	slog.Info(query)
 
 	_, err = db.db.Exec(query)
 	if err != nil {

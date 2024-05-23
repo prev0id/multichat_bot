@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 
@@ -52,7 +53,8 @@ func (s *Service) HandleAddBanWord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config.BannedWords = config.BannedWords.Add(vals.Get("input"))
+	word := strings.TrimSpace(strings.ToLower(vals.Get("input")))
+	config.BannedWords = config.BannedWords.Add(word)
 
 	if err := s.db.UpdateBannedWords(user.ID, platform, config.BannedWords); err != nil {
 		data := domain.NewTemplateSettingsData(platform, config, errorTryLater)
@@ -93,6 +95,7 @@ func (s *Service) HandleRemoveBanWord(w http.ResponseWriter, r *http.Request) {
 	}
 
 	wordToRemove := chi.URLParam(r, domain.URLParamWord)
+	wordToRemove = strings.TrimSpace(strings.ToLower(wordToRemove))
 
 	config.BannedWords = config.BannedWords.Remove(wordToRemove)
 

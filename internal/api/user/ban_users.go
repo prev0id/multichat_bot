@@ -1,9 +1,7 @@
 package user
 
 import (
-	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 
@@ -29,9 +27,6 @@ func (s *Service) HandleAddBanUser(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	slog.Info(fmt.Sprintf("%+v", user.Platforms[domain.YouTube]))
-	slog.Info(fmt.Sprintf("%+v", user.Platforms[domain.Twitch]))
 
 	config, ok := user.Platforms[platform]
 	if !ok {
