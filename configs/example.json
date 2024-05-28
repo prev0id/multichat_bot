@@ -1,0 +1,44 @@
+{
+  "twitch": {
+    "username": "",
+    "token": ""
+  },
+  "youtube": {
+    "api_key": ""
+  },
+  "api": {
+    "port": ":7000",
+    "secret": ""
+  },
+  "db": {
+    "db_path": "./db/data.sqlite"
+  },
+  "cookie": {
+    "session_key": "",
+    "is_prod": false
+  },
+  "auth": {
+    "is_prod": false,
+    "twitch": {
+      "client_key": "",
+      "client_secret": "",
+      "callback_url": "http://localhost:7000/auth/twitch/callback",
+      "scopes": [
+        "channel:bot",
+        "channel:moderate",
+        "user:read:email"
+      ]
+    },
+    "youtube": {
+      "client_key": "",
+      "client_secret": "",
+      "callback_url": "",
+      "scopes": [
+        "profile",
+        "email",
+        "https://www.googleapis.com/auth/youtube.readonly",
+        "https://www.googleapis.com/auth/youtube"
+      ]
+    }
+  }
+}

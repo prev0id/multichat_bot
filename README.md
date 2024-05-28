@@ -1,45 +1,80 @@
 # MultiChat Bot
 
-## Progress
+MultiChatBot - это серверный бот, который пересылает сообщения между чатами YouTube и Twitch, обеспечивая синхронное общение между пользователями обеих платформ.
+MultiChatBot подключается к вашим аккаунтам YouTube и Twitch, позволяя участникам обоих чатов видеть и взаимодействовать с сообщениями друг друга в режиме реального времени.
 
-### Backend
 
-Go 1.20.0
+Использованные технологии: Go, HTMX, Tailwind CSS, SQLite3, Docker.
 
-Дизайн системы:
-![system design](./docs/assets/architecture.png)
+## Запуск
 
-#### AppManager
+### Локально
 
-#### Twitch
+Необходим go версии не ниже 1.22.0, утилита make и заполненный ./configs/local.json конфиг.
 
-1. Manager. Предоставляет интерфейс для работы с Twitch, как API, так и IRC.
-2. Message Service. Предоставляет интерфейс для IRC. Нужен для работы с rate limit'ами.
-3. API Manager. Предоставляет интерфейс для работы с API.
-4. IRC Client. Websocket клиент принимающий и отправляющий сообщения.
-5. Processor. Обрабатывает различные типы сообщения приходящих из IRC Client, нужен для удобной единой точки вызова
-   функционала AppManager или twitch.Manager.
+```shell
+make run
+```
+
+Перейдите http://localhost:7000 (или другой порт, который указали в конфиг файле)
+
+### В docker контейнере
+
+Потребуется ./configs/prod.json конфиг.
+
+```shell
+docker-compose up -d
+```
+
+Перейдите https://localhost/
+
+## Использованные зависимости
+
+### Go пакеты
+
+Авторизация:
+
++ github.com/dghubble/gologin/v2
++ github.com/dghubble/sessions
++ golang.org/x/oauth2
+
+Роутер:
+
++ github.com/go-chi/chi/v5
+
+Работа с базой данный:
+
++ modernc.org/sqlite
++ github.com/doug-martin/goqu/v9
+
+YouTube/Google:
+
++ google.golang.org/api
+
+Twitch:
+
++ github.com/gempir/go-twitch-irc/v4
+
+Hot reload:
+
++ github.com/cosmtrek/air
+
+Linter:
+
++ github.com/golangci/golangci-lint
 
 ### Frontend
 
-- singe page website
-- [light theme](https://www.realtimecolors.com/dashboard?colors=1c0e03-ffffff-1361a4-d7bff8-197bd2&fonts=Ubuntu-Ubuntu)
-- [dark theme](https://www.realtimecolors.com/dashboard?colors=fceee3-000000-5ba8ec-1f0740-2d90e6&fonts=Ubuntu-Ubuntu)
-- [font](https://fonts.google.com/specimen/Ubuntu)
-- [svg collection](https://www.svgrepo.com/collection/coolicons-line-oval-icons/1)
-- [svg with google/twitch](https://www.svgrepo.com/collection/phosphor-bold-icons/)
-- [logo](https://www.svgrepo.com/svg/324471/robot-artificial-intelligence-android)
++ [npm](https://www.npmjs.com/)
++ [HTMX](https://htmx.org/)
++ [Tailwind CSS](https://tailwindcss.com/)
 
+### SVGs
 
-svg by: krystonschwarze
-https://www.svgrepo.com/svg/511185/user-02
-https://www.svgrepo.com/svg/510970/external-link
-https://www.svgrepo.com/svg/511122/settings
-https://www.svgrepo.com/svg/510988/folder-code
-
-by: Klever Space
-https://www.svgrepo.com/svg/488713/twitch
-https://www.svgrepo.com/svg/488595/google
-
-favicon by Iconhub:
-https://www.svgrepo.com/svg/463649/settings
++ https://www.svgrepo.com/svg/511185/user-02
++ https://www.svgrepo.com/svg/510970/external-link
++ https://www.svgrepo.com/svg/511122/settings
++ https://www.svgrepo.com/svg/510988/folder-code
++ https://www.svgrepo.com/svg/488713/twitch
++ https://www.svgrepo.com/svg/488595/google
++ https://www.svgrepo.com/svg/463649/settings
